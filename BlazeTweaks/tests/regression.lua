@@ -21,6 +21,7 @@ local function NewFrame(name)
     function f:SetChecked(value) self.checked = value end
     function f:GetChecked() return self.checked end
     function f:CreateFontString() return NewFrame() end
+    function f:GetFont() return "Fonts\\FRIZQT__.TTF", 12, "" end
     function f:CreateTexture() return NewFrame() end
     function f:SetTexture(texture) self.texture = texture end
     function f:SetSize(width, height) self.width, self.height = width, height end
@@ -53,7 +54,11 @@ local function NewFrame(name)
         "SetAutoFocus", "SetFontObject", "SetMaxLetters", "SetScrollChild",
         "SetJustifyH", "SetTextInsets", "SetNumeric", "SetWordWrap", "SetClipsChildren",
         "AddLine", "SetColorTexture", "SetOrientation", "SetValueStep", "SetThumbTexture",
-        "EnableMouseWheel", "UpdateScrollChildRect" }) do f[method] = noop end
+        "EnableMouseWheel", "UpdateScrollChildRect", "SetBackdropBorderColor",
+        "SetFont", "SetTextColor", "SetShadowOffset", "SetNormalFontObject",
+        "SetHighlightFontObject", "SetDisabledFontObject", "SetNormalTexture",
+        "SetPushedTexture", "SetDisabledTexture", "SetHighlightTexture",
+        "SetCheckedTexture" }) do f[method] = noop end
     return f
 end
 
@@ -94,6 +99,8 @@ local function NewAddon(charDB, sharedDB, dialogue)
     BlazeTweaksCharDB, BlazeTweaksDB = charDB, sharedDB
     DUIQuestFrame = dialogue
     UIParent, ChatFontNormal, UISpecialFrames, SlashCmdList = {}, {}, {}, {}
+    GameFontHighlight, GameFontHighlightSmall, GameFontDisableSmall = NewFrame(), NewFrame(), NewFrame()
+    CreateFont = function() return NewFrame() end
     LootFrame = NewFrame()
     GameTooltip = NewFrame()
     MerchantFrame, BankFrame = NewFrame(), NewFrame()
@@ -192,7 +199,7 @@ function tests.item_feedback_expires_without_clearing_newer_messages()
     missingItems[90002] = true
     ui.itemInput:SetText("90002"); ui.addButton.scripts.OnClick()
     Advance(5)
-    assert(ui.message:GetText():find("Intet svar", 1, true), "lookup timeout feedback needs its own display time")
+    assert(ui.message:GetText():find("timed out", 1, true), "lookup timeout feedback needs its own display time")
     Advance(5)
     assert(ui.message:GetText() == "")
 end
@@ -336,7 +343,7 @@ function tests.saved_item_data_loads_and_hidden_input_stays_unfocused()
     missingItems[90001] = true
     SlashCmdList.BLAZETWEAKS()
     local ui = BlazeTweaksOptionsFrame
-    assert(ui.rows[4].name.text == "Indlæser item...")
+    assert(ui.rows[4].name.text == "Loading item...")
     missingItems[90001] = nil; Fire("ITEM_DATA_LOAD_RESULT", 90001, true)
     assert(ui.rows[4].name.text:find("Item 90001", 1, true))
     missingItems[90002] = true

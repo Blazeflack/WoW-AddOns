@@ -1,94 +1,100 @@
 # BlazeTweaks
 
-To funktioner til WoW Forever: automatisk åbning af nye clams/containers og
-automatisk valg af én tilgængelig bank-, taxi- eller vendor-gossipmulighed uden quests.
+Two tweaks for WoW Forever: automatically open newly acquired clams/containers
+and select a single available bank, taxi or vendor gossip option without quests.
 
-Åbn indstillinger med `/bt` eller `/blazetweaks`.
+Open settings with `/bt` or `/blazetweaks`.
+The GUI matches BlazeMail's dark brown theme with light text, thin borders and
+muted gold highlights. BlazeMail does not need to be installed.
 
-- Til/fra gemmes **pr. karakter**. Nye indstillinger er slået fra; eksisterende
-  booleske valg for `autoOpenClams` og `autoGossip` bevares.
-- Ændringer virker straks uden reload. Slår du en funktion fra, gør dens ventende
-  callbacks ikke mere. Et item, der allerede er brugt, kan ikke trækkes tilbage.
-- De tre faste clams er item-ID 5523, 5524 og 7973.
-- Ekstra item-ID'er gemmes **kontofælles** i `BlazeTweaksDB.containerItems`.
-  Skriv ét ID i det lille felt og tryk **Tilføj** eller Enter. Klik i feltet giver
-  fokus med blinkende tekstmarkør. Tilføjelser og fjernelser gemmes straks.
-  Feedback vises ved siden af Tilføj-knappen og forsvinder efter fem sekunder.
-- Listen viser standard-items og ekstra items i **to kolonner** med ikon, navn og
-  item-tooltip ved mouseover. Ved pladsmangel vises en scrollbar; både træk i
-  scrollbaren og musehjulet kan bruges. Fjern et ekstra item med **X**;
-  standard-items kan ikke fjernes.
-  Standard-items står først; ekstra items vises derefter i tilføjelsesrækkefølge,
-  læst fra venstre mod højre i hver række. Rækkefølgen gemmes kontofælles i
-  `BlazeTweaksDB.containerItemOrder`. Fjernes et item og tilføjes igen, placeres
-  det sidst. Ældre gemte lister har ingen historik om tilføjelse og indlæses derfor
-  første gang i item-ID-rækkefølge; fremtidige tilføjelser sættes sidst.
-  Dubletter og ugyldige ID'er afvises. Manglende itemdata hentes asynkront; gamle
-  gemte items vises midlertidigt med en pladsholder, indtil data er klar.
-  Et opslag uden svar afbrydes efter fem sekunder og kan forsøges igen.
-  Et eksisterende item er ikke nødvendigvis en åbningsbar container; tilføj kun
-  containers, du ønsker automatisk brug af.
-- Kun tilgang efter aktivering køres i køen. Items, som allerede ligger i taskerne
-  ved login, aktivering eller ændring af listen, åbnes ikke automatisk.
-- Åbning venter ved kamp, åbent loot-vindue, butik, bank, låste items og manglende
-  ledige pladser i normale tasker. Højst tre brug-forsøg pr. køpost.
-- Hold Shift ved åbning af gossip for at springe automatisk valg over under den side.
-- Gossip har separate undervalg for **Bank**, **Taxi** og **Vendor**, gemt pr.
-  karakter i `BlazeTweaksCharDB.gossipTypes`. Alle tre er slået til som standard;
-  hovedvalget er fortsat slået fra som standard. Undervalg kan ændres uden reload,
-  og eksisterende individuelle valg bevares ved indlæsning.
+- Toggle settings are saved **per character**. New settings are disabled;
+  existing boolean choices for `autoOpenClams` and `autoGossip` are preserved.
+- Changes apply immediately without a reload. Disabling a tweak makes its pending
+  callbacks inactive. An item that has already been used cannot be recovered.
+- The three default clams have item IDs 5523, 5524 and 7973.
+- Additional item IDs are saved **account-wide** in `BlazeTweaksDB.containerItems`.
+  Enter one ID in the small input field and press **Add** or Enter. Clicking the
+  field focuses it and displays a blinking cursor. Additions and removals are
+  saved immediately. Feedback appears beside Add and disappears after five seconds.
+- The list displays default and additional items in **two columns**, with icons,
+  names and item tooltips on hover. When needed, a scrollbar appears; both dragging
+  the scrollbar and using the mouse wheel are supported. Remove an additional item
+  with **X**; default items cannot be removed.
+  Default items appear first, followed by additional items in insertion order,
+  read from left to right in each row. This order is saved account-wide in
+  `BlazeTweaksDB.containerItemOrder`. Removing and adding an item again places it
+  last. Older saved lists have no insertion history and initially load in item-ID
+  order; future additions are appended.
+  Duplicate and invalid IDs are rejected. Missing item data is loaded asynchronously;
+  existing saved items display a placeholder until their data is available.
+  A lookup with no response times out after five seconds and can be retried.
+  A valid item is not necessarily an openable container; only add containers you
+  want the addon to use automatically.
+- Only items acquired after enabling the tweak are queued. Items already in your
+  bags at login, when enabling the tweak or when changing the list are not opened.
+- Opening pauses during combat, while loot, merchant or bank windows are open,
+  while items are locked, or when normal bags have no free slots.
+  Each queue entry allows at most three use attempts.
+- Hold Shift when opening gossip to skip automatic selection for that page.
+- Gossip has separate **Bank**, **Taxi** and **Vendor** choices, saved per character
+  in `BlazeTweaksCharDB.gossipTypes`. All three are enabled by default; the main
+  toggle remains disabled by default. Individual choices can be changed without
+  a reload, and existing choices are preserved when loading.
 
-De fjernede tweaks indlæses ikke længere. Ældre SavedVariables-felter, herunder
-chathistorik, slettes ikke automatisk, men bruges heller ikke længere.
+Removed tweaks are no longer loaded. Older SavedVariables fields, including chat
+history, are not deleted automatically but are no longer used.
 
-## Kompatibilitet og test
+## Compatibility and testing
 
-API-reference: repositoryets `api.json`, version 1.60.1, build 70790, interface
-16001, eksporteret 5. november 2026. Container-/gossip-funktioner, item-GUID,
-events, timer og anvendte dokumenterede felter er kontrolleret dér.
-GUI'ens `C_Item.GetItemInfo`, `RequestLoadItemDataByID`, `ITEM_DATA_LOAD_RESULT`,
-inputfokus og `SetBlinkSpeed` er også kontrolleret i snapshot. Tooltip-metoderne
-`SetOwner`/`SetHyperlink` er ikke fuldt dokumenteret dér; brugen er kontrolleret
-mod [Forever UI-kilden](https://github.com/Gethe/wow-ui-source/blob/forever/Interface/AddOns/Blizzard_SharedXMLGame/Tooltip/TooltipDataHandler.lua)
-og den tidligere gennemgåede DialogueUI-kode. Forever-grenen rapporterede build
-70862 ved kontrollen, altså nyere end snapshot 70790. Ikoner, cursor og
-tooltips kræver stadig visuel kontrol i Forever.
+API reference: the repository's `api.json`, version 1.60.1, build 70790, interface
+16001, exported on November 5, 2026. Container/gossip functions, item GUIDs,
+events, timers and the documented fields used by the addon were checked there.
+The GUI's `C_Item.GetItemInfo`, `RequestLoadItemDataByID`, `ITEM_DATA_LOAD_RESULT`,
+input focus and `SetBlinkSpeed` were also checked against the snapshot. The tooltip
+methods `SetOwner`/`SetHyperlink` are not fully documented there; their use was
+checked against the [Forever UI source](https://github.com/Gethe/wow-ui-source/blob/forever/Interface/AddOns/Blizzard_SharedXMLGame/Tooltip/TooltipDataHandler.lua)
+and the previously reviewed DialogueUI code. The Forever branch reported build
+70862 at that check, which is newer than snapshot 70790. Icons, the cursor and
+tooltips still require visual verification in Forever.
 
-`ItemLocation:CreateFromBagAndSlot` er ikke beskrevet i snapshot. Signaturen er
-kontrolleret i [Blizzards UI-kilde spejlet hos Gethe](https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_ObjectAPI/Mainline/ItemLocation.lua),
-og funktionen kontrolleres for tilgængelighed før aktivering. Kilden er Mainline og
-udgør ikke en Forever-runtime-test. UI-templates og alle framemetoder er heller
-ikke fuldt dokumenteret i snapshot.
+`ItemLocation:CreateFromBagAndSlot` is not described in the snapshot. Its signature
+was checked in [Blizzard's UI source mirrored by Gethe](https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_ObjectAPI/Mainline/ItemLocation.lua),
+and availability is checked before enabling the tweak. That source is Mainline
+and does not constitute a Forever runtime test. UI templates and all frame methods
+are also not fully documented in the snapshot.
 
-DialogueUI-integrationen er baseret på den gennemgåede version **1.0.7 b**.
-Post-hooks på `DUIQuestFrame.ShowUI` og `HandleGossip` håndterer både indlæsningens
-udskudte gossip og nye sider i et allerede synligt vindue. Hooks bliver siddende,
-men er passive, når gossip er slået fra; de oprettes ikke igen ved hver aktivering.
-Dette er en integration med interne metoder, som fremtidige DialogueUI-versioner
-kan ændre.
+The DialogueUI integration is based on the reviewed version **1.0.7 b**.
+Post-hooks on `DUIQuestFrame.ShowUI` and `HandleGossip` handle both deferred gossip
+during loading and new pages in an already visible window. Hooks remain installed
+but are inactive when gossip is disabled; they are not recreated on each enable.
+This integration uses internal methods that future DialogueUI versions may change.
 
-Lokale regressionstests bruger en simuleret WoW-API og Lua 5.1:
+Local regression tests use a mock WoW API and Lua 5.1:
 
 ```text
 lua BlazeTweaks/tests/regression.lua
 ```
 
-Kør kommandoen fra repositoryets rod. Testfilen indlæses ikke af addonets TOC.
-Testene verificerer logik, ikke klienttilladelser, UI-layout eller diskpersistens.
+Run this command from the repository root. The test file is not loaded by the
+addon's TOC. Tests verify logic, not client permissions, UI layout or persistence
+to disk.
 
-Test i Forever efter første indlæsning af de nye filer:
+Test in Forever after loading the updated files:
 
-1. Brug `/bt`, slå funktionerne til/fra og kontrollér effekten uden reload.
-   Klik i item-ID-feltet, kontrollér cursoren, tilføj med knap og Enter, og test
-   dubletter/ugyldige ID'er. Kontrollér item-ikoner, tooltips, scrolling og X-knapper.
-2. Modtag nye clams og et kendt ekstra container-item. Prøv låste items, fulde tasker,
-   kamp og åbent loot-vindue samt butik/bank. Kontrollér, at køen fortsætter bagefter.
-3. Test bank/taxi/vendor med og uden Shift, questmuligheder og flere gossipvalg.
-   Slå hver gossiptype fra/til individuelt og kontrollér, at hovedvalget stadig
-   bestemmer, om automatiseringen kører.
-4. Test med/uden DialogueUI, umiddelbart efter login og mellem allerede synlige sider.
-5. Genstart klienten og kontrollér karaktervalg og den fælles itemliste på to karakterer.
+1. Use `/bt`, toggle the tweaks and verify immediate changes without a reload.
+   Click the item-ID field, check the cursor, add items with the button and Enter,
+   and test duplicate/invalid IDs. Check item icons, tooltips, scrolling and X buttons.
+2. Acquire new clams and a known additional container item. Test locked items,
+   full bags, combat, and open loot, merchant and bank windows. Check that the queue
+   resumes afterward.
+3. Test bank/taxi/vendor gossip with and without Shift, quest options and multiple
+   gossip options. Toggle each gossip type separately and check that the main
+   toggle still determines whether automation runs.
+4. Test with and without DialogueUI, immediately after login and between pages
+   in an already visible window.
+5. Restart the client and check character settings and the shared item list on
+   two characters.
 
-Automatisk item-brug fra en timer kræver fortsat test af de konkrete containers i
-Forever. API-tilstedeværelse beviser ikke tilladelser. Klientens beskyttelser omgås
-ikke; items, der kræver brugerinput, skal åbnes manuelt.
+Automatic item use from a timer still requires testing with the actual containers
+in Forever. API presence does not prove permission to use it. Client protections
+are respected; items requiring user input must be opened manually.

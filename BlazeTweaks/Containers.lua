@@ -125,8 +125,8 @@ local function FinishAttempt(currentAttempt)
     local remaining = pending[currentAttempt.guid]
     if not currentAttempt.confirmed and remaining and remaining.failures >= MAX_ATTEMPTS then
         pending[currentAttempt.guid] = nil
-        print("|cff00ff00BlazeTweaks:|r Kunne ikke åbne item " .. currentAttempt.itemID
-            .. ". Automatisk åbning af dette item er stoppet indtil næste tilgang.")
+        print("|cff00ff00BlazeTweaks:|r Could not open item " .. currentAttempt.itemID
+            .. ". Automatic opening of this item is paused until more are acquired.")
     end
     Schedule(0.2)
 end
@@ -172,7 +172,7 @@ function Containers:SetEnabled(state)
     if not ItemLocation or type(ItemLocation.CreateFromBagAndSlot) ~= "function"
         or not C_Item or type(C_Item.GetItemGUID) ~= "function"
         or type(issecretvalue) ~= "function" then
-        print("|cff00ff00BlazeTweaks:|r Container-API mangler. Automatisk åbning kunne ikke startes.")
+        print("|cff00ff00BlazeTweaks:|r Container API unavailable. Automatic opening could not be enabled.")
         return
     end
     enabled = true

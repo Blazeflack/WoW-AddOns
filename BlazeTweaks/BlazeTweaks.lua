@@ -62,6 +62,57 @@ local hoveredRow
 local RefreshItems
 local LIST_WIDTH, LIST_HEIGHT = 524, 180
 local ITEM_WIDTH, ITEM_STEP = 256, 38
+local fonts
+
+-- Match BlazeMail's palette and typography without requiring that addon.
+local function InitializeFonts()
+    if fonts then return end
+    local function SizedFont(name, base, size, muted)
+        local font = CreateFont(name)
+        font:SetFontObject(base)
+        local file, _, flags = base:GetFont()
+        font:SetFont(file, size, flags)
+        if muted then font:SetTextColor(0.69, 0.66, 0.60)
+        else font:SetTextColor(0.933, 0.910, 0.863) end
+        font:SetShadowOffset(0, 0)
+        return font
+    end
+    fonts = {
+        normal = SizedFont("BlazeTweaksFontNormal", GameFontHighlight, 13),
+        small = SizedFont("BlazeTweaksFontSmall", GameFontHighlightSmall, 11),
+        disabled = SizedFont("BlazeTweaksFontDisabled", GameFontDisableSmall, 11, true),
+    }
+end
+
+local function Fill(frame, layer, r, g, b, a, inset)
+    local texture = frame:CreateTexture(nil, layer)
+    inset = inset or 0
+    texture:SetPoint("TOPLEFT", inset, -inset)
+    texture:SetPoint("BOTTOMRIGHT", -inset, inset)
+    texture:SetColorTexture(r, g, b, a or 1)
+    return texture
+end
+
+local function ThemeButton(button)
+    button:SetNormalFontObject(fonts.small)
+    button:SetHighlightFontObject(fonts.small)
+    button:SetDisabledFontObject(fonts.disabled)
+    button:SetNormalTexture(Fill(button, "BACKGROUND", 0.224, 0.173, 0.129))
+    button:SetPushedTexture(Fill(button, "BACKGROUND", 0.29, 0.22, 0.15))
+    button:SetDisabledTexture(Fill(button, "BACKGROUND", 0.18, 0.145, 0.11))
+    button:SetHighlightTexture(Fill(button, "HIGHLIGHT", 0.706, 0.604, 0.420, 0.15))
+end
+
+local function ThemeCheckbox(checkbox, text)
+    checkbox:SetNormalTexture(Fill(checkbox, "BACKGROUND", 0.408, 0.318, 0.227, 1, 4))
+    Fill(checkbox, "ARTWORK", 0.224, 0.173, 0.129, 1, 5)
+    checkbox:SetCheckedTexture(Fill(checkbox, "OVERLAY", 0.706, 0.604, 0.420, 1, 8))
+    checkbox:SetHighlightTexture(Fill(checkbox, "HIGHLIGHT", 0.706, 0.604, 0.420, 0.15, 4))
+    local label = checkbox:CreateFontString(nil, "OVERLAY")
+    label:SetFontObject(fonts.small)
+    label:SetPoint("LEFT", checkbox, "RIGHT", 3, 0)
+    label:SetText(text)
+end
 
 local function ShowFeedback(text)
     feedbackRevision = feedbackRevision + 1
@@ -95,7 +146,7 @@ local function ShowItemTooltip(row)
         GameTooltip:SetHyperlink(link or ("item:" .. row.itemID))
     else
         GameTooltip:SetText("Item " .. row.itemID)
-        GameTooltip:AddLine(failedItems[row.itemID] and "Itemdata kunne ikke hentes." or "Indlæser itemdata...", 1, 1, 1)
+        GameTooltip:AddLine(failedItems[row.itemID] and "Could not load item data." or "Loading item data...", 1, 1, 1)
     end
     GameTooltip:Show()
 end
@@ -128,13 +179,16 @@ RefreshItems = function()
             row.icon:SetSize(28, 28)
             row.icon:SetPoint("LEFT", 2, 0)
             row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            row.name:SetFontObject(fonts.small)
             row.name:SetPoint("TOPLEFT", 38, -3)
             row.name:SetWidth(ITEM_WIDTH - 65)
             row.name:SetJustifyH("LEFT")
             row.name:SetWordWrap(false)
             row.details = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+            row.details:SetFontObject(fonts.disabled)
             row.details:SetPoint("TOPLEFT", 38, -19)
-            row.remove = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+            row.remove = CreateFrame("Button", nil, row)
+            ThemeButton(row.remove)
             row.remove:SetSize(20, 20)
             row.remove:SetPoint("RIGHT", -1, 0)
             row.remove:SetText("X")
@@ -150,7 +204,7 @@ RefreshItems = function()
                 HideItemTooltip(row)
                 RestartContainers()
                 RefreshItems()
-                ShowFeedback("Item fjernet fra den fælles liste.")
+                ShowFeedback("Item removed from the shared list.")
             end)
             row:SetScript("OnEnter", ShowItemTooltip)
             row:SetScript("OnLeave", HideItemTooltip)
@@ -161,8 +215,8 @@ RefreshItems = function()
         row.itemID = id
         local name, link, _, _, _, _, _, _, _, icon = C_Item.GetItemInfo(id)
         row.icon:SetTexture(icon or 134400)
-        row.name:SetText(link or name or (failedItems[id] and ("Item " .. id .. " (data mangler)") or "Indlæser item..."))
-        row.details:SetText("ID: " .. id .. (addon.Containers.defaults[id] and "  ·  Standard" or ""))
+        row.name:SetText(link or name or (failedItems[id] and ("Item " .. id .. " (data unavailable)") or "Loading item..."))
+        row.details:SetText("ID: " .. id .. (addon.Containers.defaults[id] and "  ·  Default" or ""))
         if addon.Containers.defaults[id] then row.remove:Hide() else row.remove:Show() end
         row:Show()
         if hoveredRow == row then ShowItemTooltip(row) end
@@ -187,7 +241,7 @@ local function SaveNewItem(itemID)
     RefreshItems()
     if tonumber(optionsFrame.itemInput:GetText()) == itemID then optionsFrame.itemInput:SetText("") end
     if optionsFrame:IsShown() then optionsFrame.itemInput:SetFocus() end
-    ShowFeedback("Item tilføjet for alle karakterer.")
+    ShowFeedback("Item added for all characters.")
 end
 
 local function AddItem()
@@ -195,11 +249,11 @@ local function AddItem()
     local text = optionsFrame.itemInput:GetText():match("^%s*(.-)%s*$")
     local id = tonumber(text)
     if not text:match("^%d+$") or not id or id <= 0 or id >= 2147483648 then
-        ShowFeedback("Indtast ét gyldigt item-ID.")
+        ShowFeedback("Enter a valid item ID.")
         return
     end
     if addon.Containers.defaults[id] or addon.shared.containerItems[id] then
-        ShowFeedback("Dette item er allerede på listen.")
+        ShowFeedback("This item is already on the list.")
         return
     end
     if C_Item.GetItemInfo(id) then SaveNewItem(id); return end
@@ -208,14 +262,14 @@ local function AddItem()
     local revision = requestRevision
     failedItems[id] = nil
     optionsFrame.addButton:Disable()
-    ShowFeedback("Kontrollerer item " .. id .. "...")
+    ShowFeedback("Checking item " .. id .. "...")
     RequestItem(id)
     C_Timer.After(5, function()
         if pendingAdd == id and requestRevision == revision then
             pendingAdd = nil
             requestedItems[id] = nil
             optionsFrame.addButton:Enable()
-            ShowFeedback("Intet svar på itemopslaget. Prøv igen.")
+            ShowFeedback("Item lookup timed out. Try again.")
         end
     end)
 end
@@ -223,6 +277,7 @@ end
 local function ShowOptions()
     if not addon.db then return end
     if not optionsFrame then
+        InitializeFonts()
         optionsFrame = CreateFrame("Frame", "BlazeTweaksOptionsFrame", UIParent, "BackdropTemplate")
         optionsFrame:SetSize(600, 585)
         optionsFrame:SetPoint("CENTER")
@@ -234,45 +289,50 @@ local function ShowOptions()
         optionsFrame:SetScript("OnDragStart", optionsFrame.StartMoving)
         optionsFrame:SetScript("OnDragStop", optionsFrame.StopMovingOrSizing)
         optionsFrame:SetBackdrop({
-            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-            tile = true, tileSize = 32, edgeSize = 32,
-            insets = { left = 11, right = 12, top = 12, bottom = 11 },
+            bgFile = "Interface\\Buttons\\WHITE8X8",
+            edgeFile = "Interface\\Buttons\\WHITE8X8",
+            edgeSize = 1,
+            insets = { left = 1, right = 1, top = 1, bottom = 1 },
         })
-        optionsFrame:SetBackdropColor(0, 0, 0, 1)
+        optionsFrame:SetBackdropColor(0.157, 0.125, 0.094, 1)
+        optionsFrame:SetBackdropBorderColor(0.408, 0.318, 0.227, 1)
 
         local function Label(text, x, y, font)
-            local label = optionsFrame:CreateFontString(nil, "OVERLAY", font or "GameFontHighlightSmall")
+            local label = optionsFrame:CreateFontString(nil, "OVERLAY")
+            label:SetFontObject(font or fonts.small)
             label:SetPoint("TOPLEFT", x, y)
             label:SetText(text)
             return label
         end
-        Label("BlazeTweaks", 22, -22, "GameFontNormalLarge")
-        Label("Til/fra for: " .. UnitName("player") .. " - " .. GetRealmName(), 22, -48)
-        Label("Ændringer virker straks. Begge er slået fra som standard.", 22, -74)
-        Label("Containers", 22, -104, "GameFontNormal")
-        Label("Gossip", 22, -484, "GameFontNormal")
+        Label("BlazeTweaks", 22, -22, fonts.normal)
+        Label("Settings for: " .. UnitName("player") .. " - " .. GetRealmName(), 22, -48)
+        Label("Changes apply immediately. Both tweaks are disabled by default.", 22, -74)
+        Label("Containers", 22, -104, fonts.normal)
+        Label("Gossip", 22, -484, fonts.normal)
         for _, y in ipairs({ -94, -467 }) do
             local separator = optionsFrame:CreateTexture(nil, "ARTWORK")
             separator:SetSize(556, 1)
             separator:SetPoint("TOPLEFT", 22, y)
-            separator:SetColorTexture(0.55, 0.44, 0.23, 0.8)
+            separator:SetColorTexture(0.408, 0.318, 0.227, 1)
         end
-        local close = CreateFrame("Button", nil, optionsFrame, "UIPanelCloseButton")
-        close:SetPoint("TOPRIGHT", -5, -5)
+        local close = CreateFrame("Button", nil, optionsFrame)
+        ThemeButton(close)
+        close:SetSize(24, 23)
+        close:SetText("X")
+        close:SetPoint("TOPRIGHT", -12, -12)
+        close:SetScript("OnClick", function() optionsFrame:Hide() end)
 
         optionsFrame.checkboxes = {}
         local tweaks = {
-            { key = "autoOpenClams", name = "Åbn nye clams og containers automatisk", y = -124 },
-            { key = "autoGossip", name = "Vælg gossip automatisk (Shift springer over)", y = -504 },
+            { key = "autoOpenClams", name = "Automatically open new clams and containers", y = -124 },
+            { key = "autoGossip", name = "Automatically select gossip (hold Shift to skip)", y = -504 },
         }
         for index, tweak in ipairs(tweaks) do
             local key = tweak.key
-            local checkbox = CreateFrame("CheckButton", "BlazeTweaksOption" .. index, optionsFrame, "UICheckButtonTemplate")
+            local checkbox = CreateFrame("CheckButton", "BlazeTweaksOption" .. index, optionsFrame)
             checkbox:SetSize(26, 26)
             checkbox:SetPoint("TOPLEFT", 22, tweak.y)
-            local label = _G[checkbox:GetName() .. "Text"]
-            if label then label:SetText(tweak.name) end
+            ThemeCheckbox(checkbox, tweak.name)
             checkbox:SetScript("OnClick", function(self)
                 ApplySetting(key, self:GetChecked() and true or false)
             end)
@@ -286,32 +346,32 @@ local function ShowOptions()
         }
         for index, gossipType in ipairs(gossipTypes) do
             local key = gossipType.key
-            local checkbox = CreateFrame("CheckButton", "BlazeTweaksGossipType" .. index, optionsFrame, "UICheckButtonTemplate")
+            local checkbox = CreateFrame("CheckButton", "BlazeTweaksGossipType" .. index, optionsFrame)
             checkbox:SetSize(24, 24)
             checkbox:SetPoint("TOPLEFT", 42 + (index - 1) * 160, -539)
-            local label = _G[checkbox:GetName() .. "Text"]
-            if label then label:SetText(gossipType.name) end
+            ThemeCheckbox(checkbox, gossipType.name)
             checkbox:SetScript("OnClick", function(self)
                 addon.db.gossipTypes[key] = self:GetChecked() and true or false
             end)
             optionsFrame.gossipCheckboxes[key] = checkbox
         end
-        Label("Itemliste — fælles for alle karakterer", 22, -160)
-        Label("Item-ID:", 22, -191)
+        Label("Item list — shared by all characters", 22, -160)
+        Label("Item ID:", 22, -191)
 
         local edit = CreateFrame("EditBox", nil, optionsFrame, "BackdropTemplate")
         edit:SetSize(100, 26)
         edit:SetPoint("TOPLEFT", 80, -183)
         edit:SetBackdrop({
             bgFile = "Interface\\Buttons\\WHITE8X8",
-            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-            tile = false, edgeSize = 8,
-            insets = { left = 2, right = 2, top = 2, bottom = 2 },
+            edgeFile = "Interface\\Buttons\\WHITE8X8",
+            edgeSize = 1,
+            insets = { left = 1, right = 1, top = 1, bottom = 1 },
         })
-        edit:SetBackdropColor(0, 0, 0, 0.8)
+        edit:SetBackdropColor(0.224, 0.173, 0.129, 1)
+        edit:SetBackdropBorderColor(0.408, 0.318, 0.227, 1)
         edit:SetMultiLine(false)
         edit:SetAutoFocus(false)
-        edit:SetFontObject("GameFontHighlight")
+        edit:SetFontObject(fonts.small)
         edit:SetTextInsets(6, 6, 0, 0)
         edit:SetNumeric(true)
         edit:SetMaxLetters(10)
@@ -321,10 +381,11 @@ local function ShowOptions()
         edit:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
         edit:SetScript("OnEnterPressed", AddItem)
         optionsFrame.itemInput = edit
-        local add = CreateFrame("Button", nil, optionsFrame, "UIPanelButtonTemplate")
+        local add = CreateFrame("Button", nil, optionsFrame)
+        ThemeButton(add)
         add:SetSize(76, 26)
         add:SetPoint("LEFT", edit, "RIGHT", 8, 0)
-        add:SetText("Tilføj")
+        add:SetText("Add")
         add:SetScript("OnClick", AddItem)
         optionsFrame.addButton = add
 
@@ -343,8 +404,10 @@ local function ShowOptions()
         bar:SetOrientation("VERTICAL")
         bar:EnableMouse(true)
         bar:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8" })
-        bar:SetBackdropColor(0, 0, 0, 0.5)
-        bar:SetThumbTexture("Interface\\Buttons\\UI-ScrollBar-Knob")
+        bar:SetBackdropColor(0.224, 0.173, 0.129, 1)
+        local thumb = bar:CreateTexture(nil, "ARTWORK")
+        thumb:SetColorTexture(0.706, 0.604, 0.420, 1)
+        bar:SetThumbTexture(thumb)
         bar:GetThumbTexture():SetSize(16, 24)
         bar:SetValueStep(1)
         bar:SetMinMaxValues(0, 0)
@@ -359,11 +422,12 @@ local function ShowOptions()
         scroll:SetScript("OnScrollRangeChanged", function(_, _, range) UpdateItemScrollbar(range) end)
 
         local message = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        message:SetFontObject(fonts.small)
         message:SetPoint("LEFT", add, "RIGHT", 10, 0)
         message:SetWidth(300)
         message:SetJustifyH("LEFT")
         optionsFrame.message = message
-        Label("Kun nytilkomne items åbnes. Standard-items kan ikke fjernes.", 22, -442)
+        Label("Only newly acquired items are opened. Default items cannot be removed.", 22, -442)
         optionsFrame:RegisterEvent("ITEM_DATA_LOAD_RESULT")
         optionsFrame:SetScript("OnEvent", function(_, _, itemID, success)
             if not requestedItems[itemID] then return end
@@ -375,7 +439,7 @@ local function ShowOptions()
                 if success and C_Item.GetItemInfo(itemID) then
                     SaveNewItem(itemID)
                 else
-                    ShowFeedback("Item " .. itemID .. " kunne ikke findes. Kontrollér ID'et.")
+                    ShowFeedback("Item " .. itemID .. " not found. Check the ID.")
                 end
             else
                 RefreshItems()
