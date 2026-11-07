@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: BlazeTweaks
+## Notes: Personal tweaks for World of Warcraft
+## Author: Blaze
+## Version: 1.0.0
+## SavedVariables: BlazeTweaksDB
+## SavedVariablesPerCharacter: BlazeTweaksCharDB
+
+BlazeTweaks.lua
