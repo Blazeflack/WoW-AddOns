@@ -1,0 +1,53 @@
+name: Release addon
+
+on:
+  push:
+    tags:
+      - 'BlazeDisenchant-v*'
+      - 'BlazeMail-v*'
+      - 'BlazeTweaks-v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Package and validate addon
+        id: package
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 .github/scripts/package_addon.py "$RELEASE_TAG" --output-dir "$RUNNER_TEMP/release"
+
+      - name: Create release with ZIP attachment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TITLE: ${{ steps.package.outputs.title }}
+          RELEASE_ARCHIVE: ${{ steps.package.outputs.archive }}
+          RELEASE_NOTES: ${{ steps.package.outputs.notes }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # A failed upload leaves a draft; reruns can finish that draft.
+          if gh release view "$RELEASE_TAG" --json isDraft > "$RUNNER_TEMP/release-state.json"; then
+            python3 -c 'import json, sys; sys.exit(0 if json.load(open(sys.argv[1]))["isDraft"] else "Release is already published; refusing to overwrite it")' "$RUNNER_TEMP/release-state.json"
+            gh release upload "$RELEASE_TAG" "$RELEASE_ARCHIVE" --clobber
+          else
+            gh release create "$RELEASE_TAG" "$RELEASE_ARCHIVE" \
+              --verify-tag --title "$RELEASE_TITLE" --notes-file "$RELEASE_NOTES" \
+              --draft --latest=false
+          fi
+          gh release edit "$RELEASE_TAG" --draft=false --latest=false
+          gh release view "$RELEASE_TAG" --json url,assets
