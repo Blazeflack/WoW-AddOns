@@ -1,0 +1,50 @@
+BlazeTweaks - How to use
+=======================
+
+For World of Warcraft: Forever. BlazeMail is not required.
+
+INSTALLATION AND SETTINGS
+1. Place the BlazeTweaks folder in your game's Interface/AddOns folder.
+   BlazeTweaks.toc must be directly inside that folder, not a nested folder.
+2. Enable BlazeTweaks in the character selection screen's AddOns list.
+3. Restart the game if you installed the addon while the game was running.
+   When updating an existing installation, use /reload to load the new files.
+4. Type /bt or /blazetweaks to open settings.
+
+Both main tweaks are disabled by default. Enable the ones you want on each
+character. Setting changes apply immediately without /reload.
+
+AUTOMATIC CONTAINERS
+- Enable the container tweak to open newly acquired items on the configured
+  list. The three built-in clam item IDs are 5523, 5524 and 7973.
+- Enter an additional container's numeric item ID and click Add or press Enter.
+  Only add containers you want used automatically: a valid item ID does not
+  mean the item is an openable container.
+- Hover over entries for item tooltips. Scroll the list when needed.
+- Use X to remove an additional item. Built-in clams cannot be removed.
+  Additional items appear in the order added; removing and adding one again
+  places it last. Duplicate and invalid IDs are rejected.
+- Items already in your bags at login, when enabling the tweak or when changing
+  the list are not opened. Acquire new matching items after enabling it.
+- Opening pauses during combat, with loot/merchant/bank windows open, while
+  items are locked or when normal bags have no free slots. It resumes when
+  conditions allow; each queued entry gets at most three use attempts.
+- Items the client does not permit the addon to open must be opened manually.
+  Disabling the tweak stops pending work; an already used item cannot be undone.
+
+AUTOMATIC NPC DIALOGUE
+- Enable the gossip tweak, then choose which Bank, Taxi and Vendor options to
+  allow. These three choices start enabled, but the main tweak starts disabled.
+- The addon selects an enabled service only when there is exactly one available
+  gossip option and there are no available or active quest entries.
+- Hold Shift when opening NPC dialogue to choose manually for that page.
+- DialogueUI is supported but is not required. Its integration may need updating
+  if a future DialogueUI version changes its internal methods.
+
+SAVED SETTINGS
+- Main toggles and Bank/Taxi/Vendor choices are saved per character in
+  BlazeTweaksCharDB.
+- Additional container IDs and their order are shared account-wide in
+  BlazeTweaksDB.
+- Use a normal logout, game exit or /reload to allow the game to save settings.
+- If item information fails to load, wait for the timeout and retry adding it.

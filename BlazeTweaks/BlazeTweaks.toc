@@ -2,7 +2,7 @@
 ## Title: BlazeTweaks
 ## Notes: Automatic containers and gossip for WoW Forever
 ## Author: Blaze
-## Version: 1.0.0
+## Version: 1.0.1
 ## SavedVariables: BlazeTweaksDB
 ## SavedVariablesPerCharacter: BlazeTweaksCharDB
 

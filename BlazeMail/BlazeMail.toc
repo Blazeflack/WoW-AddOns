@@ -2,7 +2,7 @@
 ## Title: BlazeMail
 ## Notes: Mailbox theme and alt recipient picker for WoW Forever
 ## Author: Blaze
-## Version: 1.2.0
+## Version: 1.2.1
 ## SavedVariables: BlazeMailDB
 
 Characters.lua

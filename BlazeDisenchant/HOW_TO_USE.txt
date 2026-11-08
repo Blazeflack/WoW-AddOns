@@ -1,0 +1,42 @@
+BlazeDisenchant - How to use
+===========================
+
+For World of Warcraft: Forever.
+
+INSTALLATION
+1. Place the BlazeDisenchant folder in your game's Interface/AddOns folder.
+   BlazeDisenchant.toc must be directly inside that folder, not a nested folder.
+2. Enable BlazeDisenchant in the character selection screen's AddOns list.
+3. Restart the game if you installed the addon while the game was running.
+   When updating an existing installation, use /reload to load the new files.
+
+ITEM TOOLTIPS
+- Hover over supported uncommon (green) or rare (blue) armor and weapons to see
+  estimated disenchant materials, chances and quantities.
+- Estimates use Classic tables covering supported item-level ranges up to 65.
+  They are estimates, not confirmed Forever drop rates or a guarantee that an
+  item can be disenchanted. Not every quality or item-level range is covered.
+- Auctionator is optional. If it has prices for every estimated material, the
+  tooltip also shows an expected "DE value (Auctionator)". Missing prices omit
+  the value; estimates and logging do not require Auctionator.
+
+RECORDING ACTUAL RESULTS
+1. Disenchant an item in your bags normally using your own Disenchant spell.
+   The addon does not cast the spell or choose items for you.
+2. Loot the materials and close the loot window.
+3. Type /bde to open or close the observation log.
+   The window shows the newest observations first and the current logging status.
+4. Use "Select all (Ctrl+C)", then press Ctrl+C to copy the displayed log.
+5. Type /bdelog to print the status and up to five recent observations in chat.
+
+Only results with a confirmed source item, successful cast, readable loot and
+confirmed item consumption are recorded. Ambiguous or incomplete attempts are
+skipped; check the status for the reason. Observations do not change the tooltip
+estimates automatically.
+
+SAVED DATA AND RESET
+- Observations are saved account-wide in BlazeDisenchantDB. Use a normal logout,
+  game exit or /reload to allow the game to save them.
+- "Reset log" followed by "Confirm reset" permanently clears the shared log.
+  Choose "Cancel" before confirming to keep it.
+- Drag the log window to move it. Escape or the close button closes it.

@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: BlazeDisenchant
 ## Notes: Classic disenchant estimates and observed Forever results.
-## Version: 0.2.0
+## Version: 0.2.1
 ## OptionalDeps: Auctionator
 ## SavedVariables: BlazeDisenchantDB
 

@@ -1,0 +1,56 @@
+BlazeMail - How to use
+=====================
+
+For World of Warcraft: Forever. No other addons are required.
+
+INSTALLATION
+1. Place the BlazeMail folder in your game's Interface/AddOns folder.
+   BlazeMail.toc must be directly inside that folder, not a nested folder.
+2. Enable BlazeMail on each character you want to register.
+3. Restart the game if you installed the addon while the game was running.
+   When updating an existing installation, use /reload to load the new files.
+
+REGISTER YOUR CHARACTERS
+- Log in once on each character with BlazeMail enabled to register it.
+- Use a normal logout, game exit or /reload to allow the game to save the list.
+- Characters, favorites and notes are shared account-wide in BlazeMailDB.
+
+SEND MAIL TO AN ALT
+1. Open a mailbox and select "Send Mail".
+2. Click the small "v" button to the right of the "To:" field.
+3. Choose a character to fill in the recipient's first and last name.
+4. Add your subject, message, attachments or money, check the recipient and send
+   the mail yourself. BlazeMail does not send mail automatically.
+
+The recipient list shows other registered characters in the same region,
+ruleset and faction. Use Search to match part of a first or last name, X to
+clear the search, and the page buttons to browse longer lists.
+
+After a successful send, the recipient is filled in again so you can send
+another batch. This also works for manually entered recipients. Choose or type
+a different name to change it. This memory ends when you close the mailbox.
+
+MANAGE CHARACTERS
+- Type /blazemail or click "Manage characters" in the recipient picker.
+  /bm is also available if another command has not already claimed it at login.
+- Management shows all saved characters, including other regions, rulesets and
+  factions. Favorites sort first within each region/ruleset/faction group.
+- Use "Favorite" or "Unfavorite" to change a character's priority.
+- Use "Note" to edit a note of up to 100 characters. Save or Enter saves it;
+  Cancel or Escape in the note field discards the edit. Save an empty note to
+  remove it. Hover over a character row to read the full note.
+- Click a character's name, then "Remove" to confirm removal. Cancel keeps it.
+  A removed character is registered again the next time you log in on it with
+  BlazeMail enabled. Deleted characters are not removed automatically.
+- "Back to recipients" is available while the mailbox's Send Mail tab is open.
+- Drag the title bar to move the window. Management remembers its position
+  between openings; the recipient picker opens beside the mailbox.
+- Escape or Close closes the picker. Leaving Send Mail also closes it.
+
+MAILBOX APPEARANCE AND TROUBLESHOOTING
+- The dark mailbox theme is applied automatically to Inbox, Send Mail and open
+  letters. Normal mail actions still use the game's controls.
+- If an alt is missing, log in on it with BlazeMail enabled, then check region,
+  faction, ruleset and the search field. Unknown ruleset names are not guessed.
+- Other addons that change the mailbox may affect the appearance. Verify the
+  layout in your client, especially when using other mailbox addons.
