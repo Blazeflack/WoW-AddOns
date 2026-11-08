@@ -6,6 +6,10 @@ Earlier versions have not been reconstructed.
 
 ## Unreleased
 
+### Added
+- Inbox, recipient picker and character management screenshots beneath the
+  BlazeMail description in the repository's main `README.md`.
+
 ## 1.2.1 - 2026-11-08
 
 ### Added

@@ -6,6 +6,10 @@ Earlier versions have not been reconstructed.
 
 ## Unreleased
 
+### Added
+- Settings screenshot beneath the BlazeTweaks description in the repository's
+  main `README.md`.
+
 ## 1.0.1 - 2026-11-08
 
 ### Added

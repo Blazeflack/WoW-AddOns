@@ -6,6 +6,10 @@ Earlier versions have not been reconstructed.
 
 ## Unreleased
 
+### Added
+- In-game tooltip screenshot beneath the BlazeDisenchant description in the
+  repository's main `README.md`.
+
 ## 0.2.1 - 2026-11-08
 
 ### Added
