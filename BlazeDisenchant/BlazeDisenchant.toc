@@ -1,0 +1,11 @@
+## Interface: 16001
+## Title: BlazeDisenchant
+## Notes: Classic disenchant estimates and observed Forever results.
+## Version: 0.2.0
+## OptionalDeps: Auctionator
+## SavedVariables: BlazeDisenchantDB
+
+Data.lua
+Tooltip.lua
+Log.lua
+Window.lua
