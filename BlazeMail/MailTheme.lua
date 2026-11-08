@@ -341,6 +341,12 @@ function addon.ApplyMailTheme()
             OpenMailBodyText:SetTextColor(tag, 0.933, 0.910, 0.863)
         end
     end
+    -- Auction invoices use separate FontStrings rather than the HTML mail body.
+    for _, name in ipairs({ "OpenMailInvoiceFrame", "OpenMailTransactionAmountMoneyFrame",
+        "OpenMailDepositMoneyFrame", "OpenMailHouseCutMoneyFrame", "OpenMailSalePriceMoneyFrame",
+        "ConsortiumMailFrame" }) do
+        Labels(_G[name], fonts.normal, true)
+    end
     Labels(SendMailFrame, fonts.small)
     Labels(SendMailCostMoneyFrame, fonts.small, true)
     Labels(OpenMailFrame, fonts.small)
