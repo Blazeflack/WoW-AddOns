@@ -6,6 +6,8 @@ Earlier versions have not been reconstructed.
 
 ## Unreleased
 
+## 1.3.0 - 2026-11-09
+
 ### Added
 - Account-wide theme selection at the top of Characters / Settings: keep
   the existing BlazeMail look or use Blizzard's original mailbox appearance
@@ -21,6 +23,8 @@ Earlier versions have not been reconstructed.
   directly below the list and hide it for single-page lists. Keep the layout
   stable while searching or paging.
 - Show a theme dropdown beside Reload UI and filter management by current ruleset.
+- Show only character names and notes in list rows, and refresh the usage guide
+  and screenshots for both themes.
 
 ## 1.2.2 - 2026-11-09
 
