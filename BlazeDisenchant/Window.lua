@@ -100,6 +100,7 @@ local function createWindow()
 end
 
 SLASH_BLAZEDISENCHANT1 = "/bde"
+SLASH_BLAZEDISENCHANT2 = "/blazedisenchant"
 SlashCmdList.BLAZEDISENCHANT = function()
     if not window then createWindow() end
     window:SetShown(not window:IsShown())
