@@ -4,8 +4,8 @@ local function IsReadable(value)
     return not issecretvalue or not issecretvalue(value)
 end
 
--- Longest suffix first: PvP Roleplay must not become ordinary Roleplay.
-local rulesets = { "PvP Roleplay", "Roleplay", "PvP", "PvE" }
+-- Longest suffix first: RP PvP must not become ordinary PvP.
+local rulesets = { "RP PvP", "RP", "PvP", "PvE" }
 function addon.NormalizeRuleset(connectionName)
     if not IsReadable(connectionName) or type(connectionName) ~= "string" then return end
     connectionName = connectionName:match("^%s*(.-)%s*$")
@@ -17,8 +17,11 @@ function addon.NormalizeRuleset(connectionName)
 end
 
 function addon.MigrateRulesets()
+    -- Convert labels saved by earlier versions; live realm names use RP/RP PvP.
+    local legacyRulesets = { ["Roleplay"] = "RP", ["PvP Roleplay"] = "RP PvP",
+        ["Roleplay PvP"] = "RP PvP" }
     for _, character in pairs(BlazeMailDB.characters) do
-        local ruleset = addon.NormalizeRuleset(character.ruleset)
+        local ruleset = legacyRulesets[character.ruleset] or addon.NormalizeRuleset(character.ruleset)
         if ruleset then character.ruleset = ruleset end
     end
 end

@@ -145,10 +145,37 @@ end
 Event("ADDON_LOADED", "BlazeMail")
 assert(addon.NormalizeRuleset("CAMWOW EU4 Realm 7 PvE") == "PvE", "reported client format")
 assert(addon.NormalizeRuleset("CAMWOW EU4 Realm 12 PvE") == "PvE", "ignore connection number")
-assert(addon.NormalizeRuleset("CAMWOW EU4 Realm 7 PvP") == "PvP")
-assert(addon.NormalizeRuleset("CAMWOW EU4 Realm 7 Roleplay") == "Roleplay")
-assert(addon.NormalizeRuleset("CAMWOW EU4 Realm 7 PvP Roleplay") == "PvP Roleplay")
+assert(addon.NormalizeRuleset("CAMWOW EU4 Realm 8 PvP") == "PvP")
+assert(addon.NormalizeRuleset("CAMWOW EU5 Realm 10 RP") == "RP")
+assert(addon.NormalizeRuleset("CAMWOW EU5 Realm 9 RP PvP") == "RP PvP")
 assert(not addon.NormalizeRuleset("CAMWOW EU4 Realm 7"), "unknown ruleset is not guessed")
+assert(not addon.NormalizeRuleset("Roleplay"), "legacy labels are not live rulesets")
+assert(not addon.NormalizeRuleset("PvP Roleplay"), "legacy labels are migration-only")
+
+-- Every ruleset stays isolated, including RP PvP versus ordinary PvP.
+local savedCharacters = BlazeMailDB.characters
+BlazeMailDB.characters = {}
+local realmNames = { "CAMWOW EU4 Realm 7 PvE", "CAMWOW EU4 Realm 8 PvP",
+    "CAMWOW EU5 Realm 10 RP", "CAMWOW EU5 Realm 9 RP PvP" }
+local expectedRulesets = { "PvE", "PvP", "RP", "RP PvP" }
+for i, realmName in ipairs(realmNames) do
+    Register("Scope-" .. i, "Alt", "Alliance", realmName)
+end
+for i, ruleset in ipairs(expectedRulesets) do
+    Register("Player-A", "Ada", "Alliance", ruleset)
+    local matches = addon.GetCharacters(false)
+    assert(#matches == 1 and matches[1].id == "Scope-" .. i, "isolate " .. ruleset)
+end
+for old, expected in pairs({ ["Roleplay"] = "RP", ["PvP Roleplay"] = "RP PvP",
+    ["Roleplay PvP"] = "RP PvP" }) do
+    local record = { ruleset = old, favorite = true, note = "Keep" }
+    BlazeMailDB.characters.Legacy = record
+    addon.MigrateRulesets()
+    assert(record.ruleset == expected and record.favorite and record.note == "Keep",
+        "migrate legacy label without losing metadata")
+end
+BlazeMailDB.characters = savedCharacters
+Register("Player-A", "Ada")
 assert(not SLASH_BLAZEMAIL2, "defer optional alias until login")
 local otherHandler = function() end
 SlashCmdList.OTHER = otherHandler
