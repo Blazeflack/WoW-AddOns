@@ -60,8 +60,8 @@ local pendingAdd, requestRevision = nil, 0
 local feedbackRevision = 0
 local hoveredRow
 local RefreshItems
-local LIST_WIDTH, LIST_HEIGHT = 524, 180
-local ITEM_WIDTH, ITEM_STEP = 256, 38
+local LIST_WIDTH, LIST_HEIGHT = 464, 180
+local ITEM_WIDTH, ITEM_STEP = 226, 38
 local fonts
 
 -- Match BlazeMail's palette and typography without requiring that addon.
@@ -103,14 +103,20 @@ local function ThemeButton(button)
     button:SetHighlightTexture(Fill(button, "HIGHLIGHT", 0.706, 0.604, 0.420, 0.15))
 end
 
-local function ThemeCheckbox(checkbox, text)
+local function ThemeCheckbox(checkbox, text, labelWidth)
     checkbox:SetNormalTexture(Fill(checkbox, "BACKGROUND", 0.408, 0.318, 0.227, 1, 4))
     Fill(checkbox, "ARTWORK", 0.224, 0.173, 0.129, 1, 5)
     checkbox:SetCheckedTexture(Fill(checkbox, "OVERLAY", 0.706, 0.604, 0.420, 1, 8))
     checkbox:SetHighlightTexture(Fill(checkbox, "HIGHLIGHT", 0.706, 0.604, 0.420, 0.15, 4))
     local label = checkbox:CreateFontString(nil, "OVERLAY")
     label:SetFontObject(fonts.small)
-    label:SetPoint("LEFT", checkbox, "RIGHT", 3, 0)
+    if labelWidth then
+        label:SetPoint("TOPLEFT", checkbox, "TOPRIGHT", 3, -7)
+        label:SetWidth(labelWidth)
+        label:SetJustifyH("LEFT")
+    else
+        label:SetPoint("LEFT", checkbox, "RIGHT", 3, 0)
+    end
     label:SetText(text)
 end
 
@@ -279,7 +285,7 @@ local function ShowOptions()
     if not optionsFrame then
         InitializeFonts()
         optionsFrame = CreateFrame("Frame", "BlazeTweaksOptionsFrame", UIParent, "BackdropTemplate")
-        optionsFrame:SetSize(600, 585)
+        optionsFrame:SetSize(540, 573)
         optionsFrame:SetPoint("CENTER")
         optionsFrame:SetFrameStrata("DIALOG")
         optionsFrame:SetClampedToScreen(true)
@@ -305,13 +311,12 @@ local function ShowOptions()
             return label
         end
         Label("BlazeTweaks", 22, -22, fonts.normal)
-        Label("Settings for: " .. UnitName("player") .. " - " .. GetRealmName(), 22, -48)
-        Label("Changes apply immediately. Both tweaks are disabled by default.", 22, -74)
-        Label("Containers", 22, -104, fonts.normal)
-        Label("Gossip", 22, -484, fonts.normal)
-        for _, y in ipairs({ -94, -467 }) do
+        Label("Changes apply immediately.", 22, -48)
+        Label("Containers", 22, -78, fonts.normal)
+        Label("Gossip", 22, -458, fonts.normal)
+        for _, y in ipairs({ -68, -441 }) do
             local separator = optionsFrame:CreateTexture(nil, "ARTWORK")
-            separator:SetSize(556, 1)
+            separator:SetSize(496, 1)
             separator:SetPoint("TOPLEFT", 22, y)
             separator:SetColorTexture(0.408, 0.318, 0.227, 1)
         end
@@ -324,15 +329,15 @@ local function ShowOptions()
 
         optionsFrame.checkboxes = {}
         local tweaks = {
-            { key = "autoOpenClams", name = "Automatically open new clams and containers", y = -124 },
-            { key = "autoGossip", name = "Automatically select gossip (hold Shift to skip)", y = -504 },
+            { key = "autoOpenClams", name = "Automatically open new clams and containers", y = -98 },
+            { key = "autoGossip", name = "Automatically select gossip when it's the only choice.\nHold Shift to skip automation.", y = -478, labelWidth = 467 },
         }
         for index, tweak in ipairs(tweaks) do
             local key = tweak.key
             local checkbox = CreateFrame("CheckButton", "BlazeTweaksOption" .. index, optionsFrame)
             checkbox:SetSize(26, 26)
             checkbox:SetPoint("TOPLEFT", 22, tweak.y)
-            ThemeCheckbox(checkbox, tweak.name)
+            ThemeCheckbox(checkbox, tweak.name, tweak.labelWidth)
             checkbox:SetScript("OnClick", function(self)
                 ApplySetting(key, self:GetChecked() and true or false)
             end)
@@ -348,19 +353,19 @@ local function ShowOptions()
             local key = gossipType.key
             local checkbox = CreateFrame("CheckButton", "BlazeTweaksGossipType" .. index, optionsFrame)
             checkbox:SetSize(24, 24)
-            checkbox:SetPoint("TOPLEFT", 42 + (index - 1) * 160, -539)
+            checkbox:SetPoint("TOPLEFT", 42 + (index - 1) * 140, -527)
             ThemeCheckbox(checkbox, gossipType.name)
             checkbox:SetScript("OnClick", function(self)
                 addon.db.gossipTypes[key] = self:GetChecked() and true or false
             end)
             optionsFrame.gossipCheckboxes[key] = checkbox
         end
-        Label("Item list — shared by all characters", 22, -160)
-        Label("Item ID:", 22, -191)
+        Label("Item list — shared by all characters", 22, -134)
+        Label("Item ID:", 22, -165)
 
         local edit = CreateFrame("EditBox", nil, optionsFrame, "BackdropTemplate")
         edit:SetSize(100, 26)
-        edit:SetPoint("TOPLEFT", 80, -183)
+        edit:SetPoint("TOPLEFT", 80, -157)
         edit:SetBackdrop({
             bgFile = "Interface\\Buttons\\WHITE8X8",
             edgeFile = "Interface\\Buttons\\WHITE8X8",
@@ -390,7 +395,7 @@ local function ShowOptions()
         optionsFrame.addButton = add
 
         local scroll = CreateFrame("ScrollFrame", nil, optionsFrame)
-        scroll:SetPoint("TOPLEFT", 26, -225)
+        scroll:SetPoint("TOPLEFT", 26, -199)
         scroll:SetSize(LIST_WIDTH, LIST_HEIGHT)
         scroll:SetClipsChildren(true)
         local content = CreateFrame("Frame", nil, scroll)
@@ -424,10 +429,10 @@ local function ShowOptions()
         local message = optionsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         message:SetFontObject(fonts.small)
         message:SetPoint("LEFT", add, "RIGHT", 10, 0)
-        message:SetWidth(300)
+        message:SetWidth(240)
         message:SetJustifyH("LEFT")
         optionsFrame.message = message
-        Label("Only newly acquired items are opened. Default items cannot be removed.", 22, -442)
+        Label("Only newly acquired items are opened. Default items cannot be removed.", 22, -416)
         optionsFrame:RegisterEvent("ITEM_DATA_LOAD_RESULT")
         optionsFrame:SetScript("OnEvent", function(_, _, itemID, success)
             if not requestedItems[itemID] then return end

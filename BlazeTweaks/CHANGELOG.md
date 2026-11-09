@@ -6,6 +6,11 @@ Earlier versions have not been reconstructed.
 
 ## Unreleased
 
+### Changed
+- Narrowed the settings window and removed the character heading and default-state text.
+- Clarified that gossip is selected automatically only when it is the only choice,
+  with Shift available to skip automation.
+
 ### Added
 - Settings screenshot beneath the BlazeTweaks description in the repository's
   main `README.md`.
