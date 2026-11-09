@@ -12,19 +12,19 @@ See [RELEASING.md](RELEASING.md) for publishing individual addon releases throug
 
   ![BlazeDisenchant tooltip showing estimated disenchant materials, drop chances, quantities and Auctionator value](./BlazeDisenchant/images/disenchant-tooltip.png)
 
-- [BlazeMail](./BlazeMail/) restyles the mailbox and adds a searchable recipient picker to the send-mail window. Select one of your alts to fill in the recipient field without typing the character's name.
+- [BlazeMail](./BlazeMail/) adds a searchable recipient picker to the Send Mail window. Select an alt to fill in the recipient field. In **Characters / Settings**, choose the dark **BlazeMail** theme or the **Blizzard** theme, then click **Reload UI** to apply the change.
 
-  **Inbox** — the restyled mailbox.
+  **Send Mail with the BlazeMail theme**
 
-  ![BlazeMail themed inbox with mail navigation and an empty mailbox](./BlazeMail/images/mailbox-inbox.png)
+  ![Dark BlazeMail compose window with a searchable recipient list showing alt names and notes](./BlazeMail/images/send-mail-recipients.png)
 
-  **Send Mail and recipient picker** — find an alt by name and select a recipient.
+  **Send Mail with the Blizzard theme**
 
-  ![BlazeMail send-mail window beside the searchable alt recipient list](./BlazeMail/images/send-mail-recipients.png)
+  ![Blizzard’s parchment mail form beside the recipient picker with matching Blizzard controls](./BlazeMail/images/send-mail-blizzard.png)
 
-  **Manage characters** — search saved characters, mark favorites and add notes.
+  **Characters / Settings**
 
-  ![BlazeMail character management with search, favorites and notes](./BlazeMail/images/manage-characters.png)
+  ![BlazeMail settings showing the theme dropdown, character search, favorites and notes](./BlazeMail/images/manage-characters.png)
 
 - [BlazeTweaks](./BlazeTweaks/) adds two independent options. One automatically opens newly acquired clams and other containers on a configurable list. The other automatically selects eligible NPC dialogue options. Hold Shift when talking to an NPC to choose manually.
 
