@@ -4,8 +4,6 @@ This repository contains small, independent World of Warcraft addons developed f
 
 Each addon lives in its own directory and can be installed separately.
 
-See [RELEASING.md](RELEASING.md) for publishing individual addon releases through GitHub Desktop and GitHub Actions.
-
 ## Addons
 
 - [BlazeDisenchant](./BlazeDisenchant/) shows which materials an item may yield when disenchanted, using Classic drop estimates. It also logs actual disenchant results in WoW Forever. With Auctionator price data, the tooltip includes the estimated value of the materials.
