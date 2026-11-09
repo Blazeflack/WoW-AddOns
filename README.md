@@ -12,7 +12,7 @@ Each addon lives in its own directory and can be installed separately.
 
   ![BlazeDisenchant tooltip showing estimated disenchant materials, drop chances, quantities and Auctionator value](./BlazeDisenchant/images/disenchant-tooltip.png)
 
-- [BlazeMail](./BlazeMail/) adds a searchable recipient picker to the Send Mail window. Select an alt to fill in the recipient field. In **Characters / Settings**, choose the dark **BlazeMail** theme or the **Blizzard** theme, then click **Reload UI** to apply the change.
+- [BlazeMail](./BlazeMail/) adds a searchable recipient picker to the Send Mail window. Select an alt to fill in the recipient field. In **Characters / Settings**, you can choose a theme, mark individual characters as favorites, and add notes for each character.
 
   Open **Characters / Settings** with `/bm` or `/blazemail`, or click the **BlazeMail** button in the mailbox window.
 
