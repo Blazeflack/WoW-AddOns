@@ -6,6 +6,8 @@ Earlier versions have not been reconstructed.
 
 ## Unreleased
 
+## 1.0.2 - 2026-11-09
+
 ### Changed
 - Narrowed the settings window and removed the character heading and default-state text.
 - Clarified that gossip is selected automatically only when it is the only choice,
