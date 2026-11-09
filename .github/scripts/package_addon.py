@@ -68,8 +68,7 @@ def package(tag, output_dir):
     notes = output_dir / f"{addon}-{version}-notes.md"
     notes.write_text(
         f"## Installation\n\nDownload **{archive.name}** and extract the **{addon}/** "
-        "folder into `Interface/AddOns`. Tests are excluded.\n\n"
-        "Restart the client for a new installation; use `/reload` when updating. "
+        "folder into `Interface/AddOns`.\n\n"
         "See `HOW_TO_USE.txt` inside the addon folder for usage instructions.\n\n"
         f"## Changes\n\n{section.group(1).strip()}\n",
         encoding="utf-8",
