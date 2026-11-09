@@ -31,9 +31,9 @@ another batch. This also works for manually entered recipients. Choose or type
 a different name to change it. This memory ends when you close the mailbox.
 
 MANAGE CHARACTERS
-- Type /blazemail or click "Manage characters" in the recipient picker.
+- Type /blazemail or click "Characters / Settings" in the recipient picker.
   /bm is also available if another command has not already claimed it at login.
-- Management shows all saved characters, including other regions, rulesets and
+- Management shows saved characters on the current ruleset, including other regions and
   factions. Favorites sort first within each region/ruleset/faction group.
 - Use "Favorite" or "Unfavorite" to change a character's priority.
 - Use "Note" to edit a note of up to 100 characters. Save or Enter saves it;
@@ -54,7 +54,7 @@ MANAGE CHARACTERS
 
 MAILBOX APPEARANCE AND TROUBLESHOOTING
 - Open /bm or /blazemail and choose BlazeMail or Blizzard beside "Theme"
-  at the bottom. The selected choice has a border and "Selected:" label.
+  in the dropdown at the top. Reload UI is enabled when the selection changes.
   BlazeMail keeps the existing dark look and is still the default. Click "Reload UI"
   or use /reload to apply the change. Switching back before reloading cancels
   the pending change. The theme is shared account-wide.

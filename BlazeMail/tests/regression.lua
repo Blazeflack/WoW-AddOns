@@ -17,6 +17,7 @@ local timers = {}
 C_Timer = { After = function(_, callback) timers[#timers + 1] = callback end }
 local sendHooks = {}
 local themeHooks = {}
+PanelTemplates_DeselectTab = function(tab) tab.deselected = true end
 hooksecurefunc = function(name, callback)
     if name == "SendMail" then
         sendHooks[#sendHooks + 1] = callback
@@ -43,7 +44,11 @@ local function Frame(name, parent)
     function f:GetScript(event) return self.scripts[event] end
     function f:HookScript(event, callback) self.hooks[event] = callback end
     function f:RegisterEvent(event) self[event] = true end
-    function f:Show() self.shown = true end
+    function f:Show()
+        local wasShown = self.shown
+        self.shown = true
+        if not wasShown and self.hooks.OnShow then self.hooks.OnShow(self) end
+    end
     function f:Hide()
         local wasShown = self.shown
         self.shown = false
@@ -112,6 +117,9 @@ local function Frame(name, parent)
 end
 CreateFrame = function(_, name, parent, template)
     local frame = Frame(name, parent)
+    if template == "WowStyle1DropdownTemplate" then
+        function frame:SetupMenu(generator) self.generateMenu = generator end
+    end
     frame.template = template
     if template == "DefaultPanelTemplate" then
         frame.TitleContainer = Frame(nil, frame)
@@ -227,7 +235,7 @@ Register("Player-R", "RegionAlt", "Alliance", "PvE", 1)
 Register("Player-A", "Ada")
 local eligible = addon.GetCharacters(false)
 assert(#eligible == 1 and eligible[1].id == "Player-B", "filter faction/ruleset/region/self")
-assert(#addon.GetCharacters(true) == 5, "management includes both factions and all scopes")
+assert(#addon.GetCharacters(true) == 4, "management includes both factions and regions on the current ruleset")
 assert(#addon.GetCharacters(false, " eMb ") == 1, "trimmed case-insensitive surname search")
 assert(#addon.GetCharacters(false, "PvPAlt") == 0, "search cannot reveal another ruleset")
 assert(#addon.GetCharacters(true, "a.") == 0, "search uses plain text, not patterns")
@@ -257,7 +265,7 @@ player.ruleset = "CAMWOW EU4 Realm 7 PvE"
 assert(addon.DiscoverCharacter() and addon.current.ruleset == "PvE")
 eligible = addon.GetCharacters(false)
 assert(#eligible == 1 and eligible[1].id == "Player-B", "same ruleset across numbered connections")
-assert(#addon.GetCharacters(true) == 5, "migration preserves records")
+assert(#addon.GetCharacters(true) == 4, "migration preserves records")
 player.ruleset = "PvE"
 
 player.first = "Ada-Ember"
@@ -371,7 +379,7 @@ assert(not BlazeMailDB.characters[removed], "zone events do not restore removed 
 -- Account-wide entries survive loading a fresh addon namespace on another alt.
 local nextSession = {}
 assert(loadfile("BlazeMail/Characters.lua"))("BlazeMail", nextSession)
-assert(#nextSession.GetCharacters(true) == 4)
+assert(#nextSession.GetCharacters(true) == 0)
 assert(nextSession.DiscoverCharacter())
 assert(BlazeMailDB.characters["Player-A"], "login restores removed current character")
 
@@ -450,16 +458,28 @@ assert(not tabArt:IsShown(), "tab changes do not restore old tab art")
 -- Theme changes are saved immediately but cannot partially reskin a live UI.
 SlashCmdList.BLAZEMAIL()
 local customPopup = BlazeMailPicker
-Click(customPopup.themes.blizzard)
+local function SelectMenuItem(dropdown, wanted)
+    assert(dropdown:IsShown() and dropdown.enabled)
+    local matched = false
+    dropdown:generateMenu({ CreateRadio = function(_, _, isSelected, selectTheme, value)
+        if value == wanted then
+            assert(isSelected(value) == (BlazeMailDB.theme == value))
+            selectTheme(value)
+            matched = true
+        end
+    end })
+    assert(matched)
+end
+SelectMenuItem(customPopup.dropdown, "blizzard")
 assert(BlazeMailDB.theme == "blizzard" and nextSession.activeTheme == "blaze")
-assert(customPopup.reload:IsShown() and customPopup.themeHint:IsShown())
+assert(customPopup.reload:IsShown() and customPopup.reload.enabled)
 local reloads = 0
 ReloadUI = function() reloads = reloads + 1 end
 Click(customPopup.reload)
 assert(reloads == 1, "reload requires an explicit click")
-Click(customPopup.themes.blaze)
-assert(not customPopup.reload:IsShown(), "switching back cancels pending theme change")
-Click(customPopup.themes.blizzard)
+SelectMenuItem(customPopup.dropdown, "blaze")
+assert(customPopup.reload:IsShown() and not customPopup.reload.enabled, "switching back cancels pending theme change")
+SelectMenuItem(customPopup.dropdown, "blizzard")
 customPopup:Hide()
 
 -- Simulate a reload with untouched Blizzard frames and the saved theme.
@@ -476,6 +496,7 @@ local beforeFrames, beforeHooks = #frames, #themeHooks
 blizzardSession.ApplyMailTheme()
 assert(defaultArt:IsShown() and #frames == beforeFrames and #themeHooks == beforeHooks,
     "Blizzard theme leaves mailbox art, layout and hooks untouched")
+blizzardEvents.scripts.OnEvent(blizzardEvents, "PLAYER_LOGIN")
 SlashCmdList.BLAZEMAIL()
 local defaultPopup = BlazeMailPicker
 assert(defaultPopup.template == "DefaultPanelTemplate")
@@ -493,7 +514,6 @@ defaultPopup.search:SetText("no matching characters")
 assert(defaultPopup.height == fullHeight, "search does not move controls by resizing the window")
 defaultPopup.search:SetText("")
 assert(blizzardSession.GetFonts().normal == GameFontHighlight, "use Blizzard fonts")
-blizzardEvents.scripts.OnEvent(blizzardEvents, "PLAYER_LOGIN")
 assert(defaultPopup.rows[1].entry, "character management still lists saved characters")
 Click(defaultPopup.rows[1].note)
 assert(defaultPopup.noteInput.focusBorder[1]:IsShown(), "note editor shows keyboard focus")
@@ -508,8 +528,19 @@ for _, frame in ipairs(frames) do
     if frame.text == "v" then defaultPicker = frame end
 end
 assert(defaultPicker.template == "UIPanelButtonTemplate")
+assert(BlazeMailSettingsTab.deselected)
+SendMailFrame:Hide()
+Click(BlazeMailSettingsTab)
+assert(defaultPopup:IsShown() and not defaultPopup.manage:IsShown())
+SendMailFrame:Show()
+assert(defaultPopup:IsShown() and defaultPopup.manage:IsShown())
+SendMailFrame:Hide()
+assert(defaultPopup:IsShown() and not defaultPopup.manage:IsShown(), "Inbox -> settings -> Send Mail -> Inbox keeps settings open")
+SendMailFrame:Show()
+assert(defaultPopup.point[1] == "TOPLEFT" and defaultPopup.point[2] == MailFrame, "settings shortcut ignores saved position")
+defaultPopup:Hide()
 Click(defaultPicker)
-assert(not defaultPopup.themes.blizzard:IsShown() and not defaultPopup.themeLabel:IsShown())
+assert(not defaultPopup.dropdown:IsShown() and not defaultPopup.themeLabel:IsShown())
 assert(defaultPopup.rows[1].height == 48, "recipient rows have more text padding")
 assert(defaultPopup.height < fullHeight, "recipient window fits its smaller character list")
 defaultPopup.search:SetText(defaultPopup.rows[1].entry.character.name)
@@ -526,7 +557,7 @@ assert(SendMailNameEditBox:GetText() == defaultRecipient and not defaultPopup:Is
     "Blizzard recipient picker fills the selected name")
 assert(defaultArt:IsShown() and #themeHooks == beforeHooks, "mail events preserve Blizzard appearance")
 SlashCmdList.BLAZEMAIL()
-Click(defaultPopup.themes.blaze)
+SelectMenuItem(defaultPopup.dropdown, "blaze")
 blizzardSession.ApplyMailTheme()
 assert(defaultArt:IsShown() and #themeHooks == beforeHooks, "pending BlazeMail theme waits for reload")
 BlazeMailDB.theme = "invalid"

@@ -70,10 +70,9 @@ function addon.GetCharacters(manage, query)
     local current = addon.current
     query = (query or ""):match("^%s*(.-)%s*$"):lower()
     for id, character in pairs(BlazeMailDB.characters) do
-        local eligible = manage or (current and id ~= current.guid
+        local eligible = current and character.ruleset == current.ruleset and (manage or (id ~= current.guid
             and character.region == current.region
-            and character.ruleset == current.ruleset
-            and character.faction == current.faction)
+            and character.faction == current.faction))
         if eligible and (query == "" or character.name:lower():find(query, 1, true)) then
             entries[#entries + 1] = { id = id, character = character }
         end

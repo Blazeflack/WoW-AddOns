@@ -1,6 +1,7 @@
 local addonName, addon = ...
 local eventFrame = CreateFrame("Frame")
 local popup, picker, Refresh
+local settingsTab
 local page, managing, pendingDelete = 1, false, nil
 local editingNote, positionKey
 local pendingMail
@@ -120,7 +121,7 @@ local function Outline(frame, thickness)
         line:SetPoint(edge[1])
         line:SetPoint(edge[2])
         if edge[3] then line:SetHeight(thickness) else line:SetWidth(thickness) end
-        line:SetColorTexture(1, 0.82, 0, 1)
+        line:SetColorTexture(0.68, 0.59, 0.43, 0.8)
         line:Hide()
         lines[#lines + 1] = line
     end
@@ -143,7 +144,7 @@ local function EditBox(parent, width, height)
     else
         background:SetColorTexture(0.224, 0.173, 0.129, 1)
     end
-    box.focusBorder = Outline(box, 2)
+    box.focusBorder = Outline(box, 1)
     local function Focus(shown)
         for _, line in ipairs(box.focusBorder) do line:SetShown(shown) end
     end
@@ -219,13 +220,12 @@ local function CreatePopup()
     end)
     titleBar:SetScript("OnDragStop", SavePosition)
     if blizzard then
-        popup.CloseButton = CreateFrame("Button", nil, popup, "UIPanelCloseButton")
-        popup.CloseButton:SetPoint("TOPRIGHT", -1, -1)
+        popup.CloseButton = CreateFrame("Button", nil, popup, "UIPanelCloseButtonDefaultAnchors")
     end
     popup.context = Label(popup, "", 12, -35, 366)
     popup.context:SetFontObject(GetFonts().small)
-    Label(popup, "Search:", 12, -66, 54)
-    popup.search = EditBox(popup, 270, 25)
+    popup.searchLabel = Label(popup, "Search:", 12, -66, 54)
+    popup.search = EditBox(popup, 250, 25)
     popup.search:SetPoint("TOPLEFT", Layout(68), Layout(-58))
     popup.search:SetMaxLetters(77)
     popup.clearSearch = Button(popup, "X", 32, 25, function()
@@ -235,7 +235,7 @@ local function CreatePopup()
     popup.clearSearch:SetPoint("TOPRIGHT", Layout(-12), Layout(-58))
     popup.rows = {}
     for i = 1, PAGE_SIZE do
-        local row = Button(popup, "", 366, 64, function(self)
+        local row = Button(popup, "", 342, 64, function(self)
             if managing then
                 pendingDelete = self.entry
                 GameTooltip:Hide()
@@ -324,9 +324,10 @@ local function CreatePopup()
         Refresh()
     end)
     popup.page = Label(popup, "", 165, -397, 85)
-    popup.noteInput = EditBox(popup, 366, 25)
+    popup.noteLabel = Label(popup, "Set note:", 24, 0, 66)
+    popup.noteInput = EditBox(popup, 270, 25)
     popup.noteInput:SetMaxLetters(100)
-    popup.manage = Button(popup, "Manage characters", 180, 24, function()
+    popup.manage = Button(popup, "Characters / Settings", 180, 24, function()
         managing, pendingDelete, editingNote, page = not managing, nil, nil, 1
         popup.visibleSlots, popup.showPagination = nil, nil
         Refresh()
@@ -351,22 +352,23 @@ local function CreatePopup()
         Refresh()
     end)
     popup.cancel:SetPoint("BOTTOMRIGHT", Layout(-12), Layout(12))
-    popup.separator = popup:CreateTexture(nil, "ARTWORK")
-    popup.separator:SetHeight(1)
-    popup.separator:SetColorTexture(addon.accent.r, addon.accent.g, addon.accent.b, 0.5)
-    popup.themeLabel = Label(popup, "Theme:", 12, 0, 54)
-    popup.themes = {}
-    for _, theme in ipairs({ "blaze", "blizzard" }) do
-        local choice = Button(popup, theme == "blaze" and "BlazeMail" or "Blizzard", 142, 26, function()
-            BlazeMailDB.theme = theme
-            Refresh()
-        end)
-        choice.selection = Outline(choice, 2)
-        popup.themes[theme] = choice
+    popup.themeLabel = Label(popup, "Theme:", 24, -46, 54)
+    popup.dropdown = CreateFrame("DropdownButton", nil, popup, "WowStyle1DropdownTemplate")
+    popup.dropdown:SetSize(148, 26)
+    popup.dropdown:SetPoint("TOPLEFT", 84, -38)
+    local function IsSelected(theme)
+        return BlazeMailDB.theme == theme
     end
-    popup.reload = Button(popup, "Reload UI", 110, 24, function() ReloadUI() end)
-    popup.themeHint = Label(popup, "Apply theme with Reload UI.", 12, 0, 244)
-    popup.themeHint:SetFontObject(GetFonts().small)
+    local function SelectTheme(theme)
+        BlazeMailDB.theme = theme
+        Refresh()
+    end
+    popup.dropdown:SetupMenu(function(_, menu)
+        menu:CreateRadio("BlazeMail", IsSelected, SelectTheme, "blaze")
+        menu:CreateRadio("Blizzard", IsSelected, SelectTheme, "blizzard")
+    end)
+    popup.reload = Button(popup, "Reload UI", 110, 26, function() ReloadUI() end)
+    popup.reload:SetPoint("TOPRIGHT", -24, -38)
     popup:SetScript("OnHide", function()
         SavePosition()
         popup.search:ClearFocus()
@@ -398,16 +400,27 @@ local function LayoutPopup(entryCount, pages)
     local slots = math.max(popup.visibleSlots, math.min(PAGE_SIZE, entryCount))
     popup.visibleSlots = slots
     if pages > 1 then popup.showPagination = true end
+    local searchTop = managing and 98 or 38
+    local listTop = searchTop + 38
+    local function Place(widget, point, x, y)
+        widget:ClearAllPoints()
+        widget:SetPoint(point, Layout(x), Layout(-y))
+    end
+    Place(popup.searchLabel, "TOPLEFT", 24, searchTop + 7)
+    Place(popup.search, "TOPLEFT", 80, searchTop)
+    Place(popup.clearSearch, "TOPRIGHT", -24, searchTop)
+    Place(popup.context, "TOPLEFT", 24, searchTop - 21)
+    Place(popup.empty, "TOPLEFT", 32, listTop + 10)
     for i, row in ipairs(popup.rows) do
         row:SetHeight(Layout(rowHeight))
         row:ClearAllPoints()
-        row:SetPoint("TOPLEFT", Layout(12), Layout(-96 - (i - 1) * (rowHeight + 6)))
+        row:SetPoint("TOPLEFT", Layout(24), Layout(-listTop - (i - 1) * (rowHeight + 6)))
         row.name:ClearAllPoints()
-        row.name:SetPoint("TOPLEFT", Layout(10), Layout(managing and -10 or -8))
+        row.name:SetPoint("TOPLEFT", Layout(14), Layout(managing and -10 or -8))
         row.detail:ClearAllPoints()
-        row.detail:SetPoint("TOPLEFT", Layout(10), Layout(managing and -32 or -27))
+        row.detail:SetPoint("TOPLEFT", Layout(14), Layout(managing and -32 or -27))
     end
-    local y = 96 + slots * (rowHeight + 6) - 6 + 10
+    local y = listTop + slots * (rowHeight + 6) - 6 + 10
     for _, control in ipairs({ popup.previous, popup.next, popup.page }) do control:SetShown(popup.showPagination) end
     popup.previous:ClearAllPoints()
     popup.previous:SetPoint("TOPLEFT", Layout(12), Layout(-y))
@@ -416,51 +429,27 @@ local function LayoutPopup(entryCount, pages)
     popup.page:ClearAllPoints()
     popup.page:SetPoint("TOPLEFT", Layout(165), Layout(-y - 5))
     if popup.showPagination then y = y + 32 end
-    popup.noteInput:ClearAllPoints()
-    popup.noteInput:SetPoint("TOPLEFT", Layout(12), Layout(-y))
+    Place(popup.noteLabel, "TOPLEFT", 24, y + 7)
+    Place(popup.noteInput, "TOPLEFT", 96, y)
     if editingNote then y = y + 37 end
-    popup.separator:ClearAllPoints()
-    popup.separator:SetPoint("TOPLEFT", Layout(12), Layout(-y))
-    popup.separator:SetPoint("TOPRIGHT", Layout(-12), Layout(-y))
-    popup.themeLabel:ClearAllPoints()
-    popup.themeLabel:SetPoint("TOPLEFT", Layout(12), Layout(-y - 15))
-    for index, theme in ipairs({ "blaze", "blizzard" }) do
-        local choice = popup.themes[theme]
-        choice:ClearAllPoints()
-        choice:SetPoint("TOPLEFT", Layout(72 + (index - 1) * 154), Layout(-y - 8))
-    end
-    if managing then y = y + 42 end
-    popup.themeHint:ClearAllPoints()
-    popup.themeHint:SetPoint("TOPLEFT", Layout(12), Layout(-y - 5))
-    popup.reload:ClearAllPoints()
-    popup.reload:SetPoint("TOPRIGHT", Layout(-12), Layout(-y))
-    if managing and BlazeMailDB.theme ~= addon.activeTheme then y = y + 32 end
     popup:SetHeight(Layout(y + 46))
 end
 
 Refresh = function()
     local entries = addon.GetCharacters(managing, popup.search:GetText())
     local busy = pendingDelete or editingNote
-    popup.separator:SetShown(managing)
     popup.themeLabel:SetShown(managing)
-    for theme, choice in pairs(popup.themes) do
-        choice:SetShown(managing)
-        local selected = BlazeMailDB.theme == theme
-        choice:SetText((selected and "Selected: " or "") .. (theme == "blaze" and "BlazeMail" or "Blizzard"))
-        choice:SetEnabled(not busy)
-        for _, line in ipairs(choice.selection) do line:SetShown(selected) end
-    end
-    popup.reload:SetShown(managing and BlazeMailDB.theme ~= addon.activeTheme)
-    popup.reload:SetEnabled(not busy)
-    popup.themeHint:SetShown(managing and BlazeMailDB.theme ~= addon.activeTheme)
+    popup.dropdown:SetShown(managing)
+    popup.dropdown:SetEnabled(not busy)
+    popup.reload:SetShown(managing)
+    popup.reload:SetEnabled(not busy and BlazeMailDB.theme ~= addon.activeTheme)
+    popup.context:SetShown(managing)
     local pages = math.max(1, math.ceil(#entries / PAGE_SIZE))
     page = math.max(1, math.min(page, pages))
-    popup.title:SetText(managing and "BlazeMail - Manage characters" or "BlazeMail - Your alts")
-    local current = addon.current
+    popup.title:SetText(managing and "BlazeMail - Characters / Settings" or "BlazeMail - Your alts")
     popup.context:SetText(pendingDelete and ("Remove " .. pendingDelete.character.name .. "?")
         or (editingNote and ("Note for " .. editingNote.character.name))
-        or (managing and "Click a character to remove it from the saved list.")
-        or (current and (current.faction .. " - " .. current.ruleset) or "Character data not available yet."))
+        or "Click a character to remove it from the saved list.")
     for i, row in ipairs(popup.rows) do
         local entry = entries[(page - 1) * PAGE_SIZE + i]
         row.entry = entry
@@ -469,8 +458,8 @@ Refresh = function()
             row.name:SetText(character.name)
             row.favorite:SetText(character.favorite and "Unfavorite" or "Favorite")
             row.favorite:SetShown(managing)
-            row.name:SetWidth(Layout(managing and 248 or 346))
-            row.detail:SetWidth(Layout(managing and 248 or 346))
+            row.name:SetWidth(Layout(managing and 224 or 314))
+            row.detail:SetWidth(Layout(managing and 224 or 314))
             for _, line in ipairs(row.favoriteBorder) do
                 line:SetShown(character.favorite == true)
             end
@@ -497,7 +486,7 @@ Refresh = function()
     popup.next:SetEnabled(page < pages and not busy)
     popup.search:SetEnabled(not busy)
     popup.clearSearch:SetEnabled(not busy)
-    popup.manage:SetText(managing and "Back to recipients" or "Manage characters")
+    popup.manage:SetText(managing and "Back to recipients" or "Characters / Settings")
     local canSwitch = not managing or (SendMailFrame and SendMailFrame:IsShown()) or false
     popup.manage:SetShown(not busy and canSwitch)
     popup.manage:SetEnabled(canSwitch)
@@ -506,14 +495,15 @@ Refresh = function()
     popup.confirm:SetShown(busy ~= nil)
     popup.cancel:SetShown(busy ~= nil)
     popup.noteInput:SetShown(editingNote ~= nil)
+    popup.noteLabel:SetShown(editingNote ~= nil)
     LayoutPopup(#entries, pages)
 end
 
-local function OpenPicker(manage)
+local function OpenPicker(manage, besideMailbox)
     CreatePopup()
     popup.visibleSlots, popup.showPagination = nil, nil
     managing, pendingDelete, editingNote, page = manage, nil, nil, 1
-    positionKey = manage and "manage" or nil
+    positionKey = manage and not besideMailbox and "manage" or nil
     popup.search:SetText("")
     popup.search:ClearFocus()
     popup:ClearAllPoints()
@@ -522,7 +512,7 @@ local function OpenPicker(manage)
         and position.x >= 0 and position.x <= 1 and position.y >= 0 and position.y <= 1 then
         popup:SetPoint("CENTER", UIParent, "BOTTOMLEFT",
             position.x * UIParent:GetWidth(), position.y * UIParent:GetHeight())
-    elseif not manage and picker then
+    elseif besideMailbox then
         popup:SetPoint("TOPLEFT", MailFrame, "TOPRIGHT", addon.mailWindowGap,
             addon.IsBlizzardTheme() and 0 or addon.mailWindowTopPadding)
     else
@@ -534,6 +524,20 @@ end
 
 local function AttachPicker()
     addon.ApplyMailTheme()
+    if MailFrame and not settingsTab then
+        local function OpenSettings() OpenPicker(true, true) end
+        if addon.IsBlizzardTheme() then
+            settingsTab = CreateFrame("Button", "BlazeMailSettingsTab", MailFrame, "FriendsFrameTabTemplate")
+            settingsTab:SetText("BlazeMail")
+            PanelTemplates_DeselectTab(settingsTab)
+            settingsTab:SetWidth(98)
+            settingsTab:SetPoint("BOTTOMRIGHT", MailFrame, "BOTTOMRIGHT", -12, -30)
+            settingsTab:SetScript("OnClick", OpenSettings)
+        else
+            settingsTab = Button(MailFrame, "BlazeMail", 90, 25, OpenSettings)
+            settingsTab:SetPoint("TOPLEFT", MailFrame, "TOPLEFT", 256, -2)
+        end
+    end
     if picker or not SendMailFrame or not SendMailNameEditBox then return end
     SendMailNameEditBox:HookScript("OnTextChanged", function(_, userInput)
         if userInput then recipientRevision = recipientRevision + 1 end
@@ -549,7 +553,7 @@ local function AttachPicker()
         end
     end)
     picker = Button(SendMailFrame, "v", 22, 22, function()
-        if popup and popup:IsShown() then popup:Hide() else OpenPicker(false) end
+        if popup and popup:IsShown() then popup:Hide() else OpenPicker(false, true) end
     end)
     picker:SetPoint("LEFT", SendMailNameEditBox, "RIGHT", 3, 0)
     picker:SetScript("OnEnter", function(self)
@@ -558,7 +562,17 @@ local function AttachPicker()
         GameTooltip:Show()
     end)
     picker:SetScript("OnLeave", function() GameTooltip:Hide() end)
-    SendMailFrame:HookScript("OnHide", function() if popup then popup:Hide() end end)
+    local function RefreshSettings()
+        if managing and popup and popup:IsShown() then Refresh() end
+    end
+    SendMailFrame:HookScript("OnShow", RefreshSettings)
+    SendMailFrame:HookScript("OnHide", function()
+        if managing then
+            RefreshSettings()
+        elseif popup then
+            popup:Hide()
+        end
+    end)
 end
 
 eventFrame:RegisterEvent("ADDON_LOADED")

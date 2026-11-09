@@ -7,7 +7,7 @@ Earlier versions have not been reconstructed.
 ## Unreleased
 
 ### Added
-- Account-wide theme selection at the bottom of the BlazeMail window: keep
+- Account-wide theme selection at the top of Characters / Settings: keep
   the existing BlazeMail look or use Blizzard's original mailbox appearance
   with Blizzard panels, buttons, inset fields and fonts for the addon windows.
 - An explicit Reload UI button for pending theme changes. The active theme
@@ -20,8 +20,7 @@ Earlier versions have not been reconstructed.
 - Fit window height to the character count on opening, place pagination
   directly below the list and hide it for single-page lists. Keep the layout
   stable while searching or paging.
-- Group the two explicit theme choices above the bottom action buttons and
-  clearly mark the selected theme.
+- Show a theme dropdown beside Reload UI and filter management by current ruleset.
 
 ## 1.2.2 - 2026-11-09
 
