@@ -4,6 +4,9 @@ Mailbox-tema og alt-modtagervælger til WoW Forever. Ingen eksterne addon-afhæn
 
 ## Brug
 
+- Vælg tema nederst i `/bm`- eller `/blazemail`-vinduet: **BlazeMail** beholder det eksisterende look og er fortsat standard; **Blizzard** lader mailboxens originale grafik og layout være urørt og bruger Blizzard-paneler, knapper, inset-felter og fonte i addonets egne vinduer. Valget gemmes account-wide. Klik **Reload UI**, eller brug `/reload`, for at aktivere ændringen. Et skift tilbage inden reload annullerer ændringen. De nedenstående beskrivelser af mailboxens mørke tema gælder **BlazeMail**.
+- Begge temaer vises som separate valg med kant og **Selected:** på det valgte tema. Blizzard-listens character-rækker bruger neutrale inset-baggrunde og hover-markering. Administrationen har højere rækker med to separate knapper på 24 UI-enheders højde.
+- Søge- og notefeltet får en guldkant ved tastaturfokus. Enter i søgefeltet eller **X** fjerner fokusmarkeringen. Vinduets højde tilpasses listen ved åbning og skift mellem modtagere/administration, men holdes stabil under søgning og sideskift. Navigationen ligger direkte under listen og skjules, hvis listen kun har én side ved åbning.
 - Installer mappen `BlazeMail` som et selvstændigt addon, og aktivér det på dine characters.
 - Log ind på hver character én gang for at registrere den. Listen gemmes account-wide i `BlazeMailDB` ved normal logout/afslutning eller `/reload`.
 - Åbn mailboxens **Send Mail**, og klik på den lille **v**-knap til højre for **To:**.
@@ -21,13 +24,19 @@ Mailbox-tema og alt-modtagervælger til WoW Forever. Ingen eksterne addon-afhæn
 - `/bm` er en kort alias for `/blazemail`, hvis kommandoen er ledig ved login. Tjekket foretages efter normal addon-indlæsning og omfatter eksisterende slash-aliaser (uanset store/små bogstaver), kommandocaches og secure kommandoer. Er `/bm` optaget, undlades aliaset, mens `/blazemail` fortsat virker. Addons, som registrerer kommandoer senere, kan ikke forudses.
 - En fjernet character registreres igen næste gang, du logger ind på den. Addonet forsøger ikke at opdage slettede characters automatisk.
 - Interfacet bruger mørke gråtoner, lys tekst og en afdæmpet orange valgmarkering. Character-navne beholder deres class-color.
-- BlazeMail har egne fontobjekter baseret på WoW's: titler, characternavne, søgelabel og sidetal bruger **13 UI-enheder**; hjælpetekst, noter, knapper og inputfelter bruger **11 UI-enheder**. De arver WoW-fontenes skrifttype, farver, skygger og flags, mens størrelsen er fastlagt af BlazeMail. De globale WoW-fontobjekter ændres ikke. Vinduet bruger de oprindelige mål på **390 × 500 UI-enheder** med de oprindelige afstande, felter og knapper. UI-scale påvirker fortsat skærmstørrelsen.
+- BlazeMail-temaet har egne fontobjekter baseret på WoW's: titler, characternavne, søgelabel og sidetal bruger **13 UI-enheder**; hjælpetekst, noter, knapper og inputfelter bruger **11 UI-enheder**. Blizzard-temaet bruger WoW's fontobjekter direkte. De globale WoW-fontobjekter ændres ikke. Vinduet er **390 UI-enheder bredt** med dynamisk højde efter antal characters, administration/modtagere, noteinput og eventuelt afventende temaskift. UI-scale påvirker fortsat skærmstørrelsen.
 - Ved bekræftelse af fjernelse bliver den valgte række vedvarende fremhævet med orange baggrund, også når musen flyttes væk. **Cancel** fjerner markeringen. Der er ingen separat fortryd-funktion efter en bekræftet fjernelse.
 - Escape eller **Close** lukker listen. Modtagerlisten lukkes også, når **Send Mail** skjules.
 - Træk i titelfeltet for at flytte vinduet. Modtagerlisten åbner hver gang 5 UI-enheder til højre for mailboxen, ligesom et åbent brev. Administrationen (`/bm`) husker sin placering mellem åbninger.
 - Favoritter, noter og placeringer gemmes account-wide i den eksisterende `BlazeMailDB`. Genregistrering ved login opdaterer characterens identitet uden at overskrive favoritter eller noter.
 
 ## Forever-kompatibilitet
+
+Temavalget er kontrolleret mod samme `api.json`-snapshot som nedenfor. `CreateFrame` og `ReloadUI` findes, men deres anvendelige signaturer er ikke dokumenteret fuldt i snapshottet. `DefaultPanelTemplate`, `UIPanelButtonTemplate`, `UIPanelCloseButton` og `InsetFrameTemplate`, inklusive titelcontaineren, er kontrolleret i Forevers [SharedUIPanelTemplates.xml](https://github.com/Gethe/wow-ui-source/blob/forever/Interface/AddOns/Blizzard_SharedXML/Mainline/SharedUIPanelTemplates.xml). Branchens build er ikke fastlåst til snapshottet. Lokale Lua 5.1-tests dækker standardvalg, gemt tema ved ny indlæsning, udsat aktivering, annullering af temaskift, eksplicit reload, urørt mailbox i Blizzard-tilstand, templatevalg, noter og modtagervalg. Faktisk grafik, klikområder, tekst i inputfelter og SavedVariables-persistens skal stadig testes i klienten.
+
+Test begge retninger efter `/reload`: vælg **Blizzard**, genindlæs, og kontrollér original **Inbox**, **Send Mail** og åbne breve samt søgning, noter og modtagervalg. Vælg derefter **BlazeMail**, genindlæs, og kontrollér det eksisterende look. Kontrollér også temaet efter normal genstart og på en anden character.
+
+Fokusmarkeringerne bruger `OnEditFocusGained` og `OnEditFocusLost`, som ikke er beskrevet i `api.json`; scriptnavnene er verificeret i samme Forever `SharedUIPanelTemplates.xml`. `SetScript`, `SetFocus`, `ClearFocus`, `SetHeight`, `SetPoint` og `SetColorTexture` er kontrolleret i snapshottet. Lokale tests dækker fokusmarkering, neutral rækketype, knaphøjder og stabil højde under søgning. Kontrollér efter `/reload`, at kanten faktisk vises ved klik i søge-/notefeltet og forsvinder ved Enter, annullering og lukning; test også tom liste, en kort liste og flere sider i begge temaer.
 
 API'er og events er kontrolleret mod repositoryets `api.json`: interface **16001**, version **1.60.1**, build **70790**, builddato **3. november 2026**, eksporteret **5. november 2026**. TOC'en bruger dette interface; det er ikke verificeret mod en aktuelt kørende klient.
 

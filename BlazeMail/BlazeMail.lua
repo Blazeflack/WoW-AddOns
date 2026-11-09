@@ -11,6 +11,9 @@ local LAYOUT_SCALE = 1
 local function Layout(value) return value * LAYOUT_SCALE end
 
 local function GetFonts()
+    if addon.IsBlizzardTheme() then
+        return { normal = GameFontHighlight, small = GameFontHighlightSmall, disabled = GameFontDisableSmall }
+    end
     if not fonts then
         local function SizedFont(name, base, size)
             local font = CreateFont(name)
@@ -76,34 +79,77 @@ local function Label(parent, text, x, y, width)
     return label
 end
 
-local function Button(parent, text, width, height, callback)
-    local button = CreateFrame("Button", nil, parent)
+local function Button(parent, text, width, height, callback, listRow)
+    local blizzard = addon.IsBlizzardTheme()
+    local template = blizzard and not listRow and "UIPanelButtonTemplate" or nil
+    local button = CreateFrame("Button", nil, parent, template)
     button:SetSize(Layout(width), Layout(height))
-    local background = button:CreateTexture(nil, "BACKGROUND")
-    background:SetAllPoints()
-    background:SetColorTexture(0.224, 0.173, 0.129, 1)
-    button.background = background
-    local highlight = button:CreateTexture(nil, "HIGHLIGHT")
-    highlight:SetAllPoints()
-    highlight:SetColorTexture(0.706, 0.604, 0.420, 0.15)
-    button:SetHighlightTexture(highlight)
-    button:SetNormalFontObject(GetFonts().small)
-    button:SetHighlightFontObject(GetFonts().small)
-    button:SetDisabledFontObject(GetFonts().disabled)
+    if listRow then button:EnableMouse(true) end
+    if blizzard and listRow then
+        local fill = button:CreateTexture(nil, "BACKGROUND")
+        fill:SetAllPoints()
+        fill:SetColorTexture(0.08, 0.07, 0.06, 0.85)
+        local highlight = button:CreateTexture(nil, "HIGHLIGHT")
+        highlight:SetAllPoints()
+        highlight:SetColorTexture(1, 0.82, 0, 0.12)
+        button:SetHighlightTexture(highlight)
+    end
+    if not blizzard then
+        local background = button:CreateTexture(nil, "BACKGROUND")
+        background:SetAllPoints()
+        background:SetColorTexture(0.224, 0.173, 0.129, 1)
+        button.background = background
+        local highlight = button:CreateTexture(nil, "HIGHLIGHT")
+        highlight:SetAllPoints()
+        highlight:SetColorTexture(0.706, 0.604, 0.420, 0.15)
+        button:SetHighlightTexture(highlight)
+        button:SetNormalFontObject(GetFonts().small)
+        button:SetHighlightFontObject(GetFonts().small)
+        button:SetDisabledFontObject(GetFonts().disabled)
+    end
     button:SetText(text)
     button:SetScript("OnClick", callback)
     return button
 end
 
+local function Outline(frame, thickness)
+    local lines = {}
+    for _, edge in ipairs({ { "TOPLEFT", "TOPRIGHT", true }, { "BOTTOMLEFT", "BOTTOMRIGHT", true },
+        { "TOPLEFT", "BOTTOMLEFT", false }, { "TOPRIGHT", "BOTTOMRIGHT", false } }) do
+        local line = frame:CreateTexture(nil, "OVERLAY")
+        line:SetPoint(edge[1])
+        line:SetPoint(edge[2])
+        if edge[3] then line:SetHeight(thickness) else line:SetWidth(thickness) end
+        line:SetColorTexture(1, 0.82, 0, 1)
+        line:Hide()
+        lines[#lines + 1] = line
+    end
+    return lines
+end
+
 local function EditBox(parent, width, height)
     local box = CreateFrame("EditBox", nil, parent)
     box:SetSize(Layout(width), Layout(height))
+    box:EnableMouse(true)
+    box:SetBlinkSpeed(0.5)
+    box:SetScript("OnMouseDown", function(self) self:SetFocus() end)
     box:SetAutoFocus(false)
     box:SetFontObject(GetFonts().small)
     box:SetTextInsets(Layout(6), Layout(6), Layout(2), Layout(2))
     local background = box:CreateTexture(nil, "BACKGROUND")
     background:SetAllPoints()
-    background:SetColorTexture(0.224, 0.173, 0.129, 1)
+    if addon.IsBlizzardTheme() then
+        background:SetColorTexture(0.06, 0.06, 0.06, 1)
+    else
+        background:SetColorTexture(0.224, 0.173, 0.129, 1)
+    end
+    box.focusBorder = Outline(box, 2)
+    local function Focus(shown)
+        for _, line in ipairs(box.focusBorder) do line:SetShown(shown) end
+    end
+    box:SetScript("OnEditFocusGained", function() Focus(true) end)
+    box:SetScript("OnEditFocusLost", function() Focus(false) end)
+    box:SetScript("OnHide", function(self) self:ClearFocus(); Focus(false) end)
     box:SetText("")
     return box
 end
@@ -142,20 +188,25 @@ end
 
 local function CreatePopup()
     if popup then return end
-    popup = CreateFrame("Frame", "BlazeMailPicker", UIParent)
-    popup:SetSize(Layout(390), Layout(500))
+    local blizzard = addon.IsBlizzardTheme()
+    popup = CreateFrame("Frame", "BlazeMailPicker", UIParent, blizzard and "DefaultPanelTemplate" or nil)
+    popup:SetSize(Layout(390), Layout(240))
     popup:SetFrameStrata("DIALOG")
     popup:SetClampedToScreen(true)
     popup:SetMovable(true)
     popup:EnableMouse(true)
-    local border = popup:CreateTexture(nil, "BACKGROUND")
-    border:SetAllPoints()
-    border:SetColorTexture(0.408, 0.318, 0.227, 1)
-    local background = popup:CreateTexture(nil, "BORDER")
-    background:SetPoint("TOPLEFT", 1, -1)
-    background:SetPoint("BOTTOMRIGHT", -1, 1)
-    background:SetColorTexture(0.157, 0.125, 0.094, 1)
-    popup.title = Label(popup, "BlazeMail", 12, -12, 366)
+    if not blizzard then
+        local border = popup:CreateTexture(nil, "BACKGROUND")
+        border:SetAllPoints()
+        border:SetColorTexture(0.408, 0.318, 0.227, 1)
+        local background = popup:CreateTexture(nil, "BORDER")
+        background:SetPoint("TOPLEFT", 1, -1)
+        background:SetPoint("BOTTOMRIGHT", -1, 1)
+        background:SetColorTexture(0.157, 0.125, 0.094, 1)
+        popup.title = Label(popup, "BlazeMail", 12, -12, 366)
+    else
+        popup.title = popup.TitleContainer.TitleText
+    end
     local titleBar = CreateFrame("Frame", nil, popup)
     titleBar:SetPoint("TOPLEFT")
     titleBar:SetPoint("TOPRIGHT")
@@ -167,6 +218,10 @@ local function CreatePopup()
         popup.moving = true
     end)
     titleBar:SetScript("OnDragStop", SavePosition)
+    if blizzard then
+        popup.CloseButton = CreateFrame("Button", nil, popup, "UIPanelCloseButton")
+        popup.CloseButton:SetPoint("TOPRIGHT", -1, -1)
+    end
     popup.context = Label(popup, "", 12, -35, 366)
     popup.context:SetFontObject(GetFonts().small)
     Label(popup, "Search:", 12, -66, 54)
@@ -180,7 +235,7 @@ local function CreatePopup()
     popup.clearSearch:SetPoint("TOPRIGHT", Layout(-12), Layout(-58))
     popup.rows = {}
     for i = 1, PAGE_SIZE do
-        local row = Button(popup, "", 366, 38, function(self)
+        local row = Button(popup, "", 366, 64, function(self)
             if managing then
                 pendingDelete = self.entry
                 GameTooltip:Hide()
@@ -189,8 +244,7 @@ local function CreatePopup()
             else
                 SelectRecipient(self.entry)
             end
-        end)
-        row:SetPoint("TOPLEFT", Layout(12), Layout(-96 - (i - 1) * 41))
+        end, true)
         row.selection = row:CreateTexture(nil, "ARTWORK")
         row.selection:SetAllPoints()
         row.selection:SetColorTexture(addon.accent.r, addon.accent.g, addon.accent.b, 0.30)
@@ -211,20 +265,20 @@ local function CreatePopup()
             line:Hide()
             row.favoriteBorder[#row.favoriteBorder + 1] = line
         end
-        row.favorite = Button(row, "Favorite", 78, 16, function()
+        row.favorite = Button(row, "Favorite", 90, 24, function()
             if not managing or pendingDelete or editingNote then return end
             GameTooltip:Hide()
             addon.ToggleFavorite(row.entry.id)
             Refresh()
         end)
-        row.favorite:SetPoint("TOPRIGHT", Layout(-4), Layout(-2))
+        row.favorite:SetPoint("TOPRIGHT", Layout(-8), Layout(-6))
         row.favorite:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
             GameTooltip:SetText(row.entry.character.favorite and "Remove favorite" or "Add favorite")
             GameTooltip:Show()
         end)
         row.favorite:SetScript("OnLeave", function() GameTooltip:Hide() end)
-        row.note = Button(row, "Note", 78, 16, function()
+        row.note = Button(row, "Note", 90, 24, function()
             if not managing or pendingDelete or editingNote then return end
             GameTooltip:Hide()
             editingNote = row.entry
@@ -233,19 +287,21 @@ local function CreatePopup()
             Refresh()
             popup.noteInput:SetFocus()
         end)
-        row.note:SetPoint("BOTTOMRIGHT", Layout(-4), Layout(2))
+        row.note:SetPoint("BOTTOMRIGHT", Layout(-8), Layout(6))
         for _, action in ipairs({ row.favorite, row.note }) do
-            action.background:SetColorTexture(0.32, 0.245, 0.17, 1)
-            for _, edge in ipairs(edges) do
-                local line = action:CreateTexture(nil, "OVERLAY")
-                line:SetColorTexture(0.55, 0.43, 0.29, 1)
-                line:SetPoint(edge[1], action, edge[1])
-                line:SetPoint(edge[2], action, edge[2])
-                if edge[3] then line:SetHeight(1) else line:SetWidth(1) end
+            if not blizzard then
+                action.background:SetColorTexture(0.32, 0.245, 0.17, 1)
+                for _, edge in ipairs(edges) do
+                    local line = action:CreateTexture(nil, "OVERLAY")
+                    line:SetColorTexture(0.55, 0.43, 0.29, 1)
+                    line:SetPoint(edge[1], action, edge[1])
+                    line:SetPoint(edge[2], action, edge[2])
+                    if edge[3] then line:SetHeight(1) else line:SetWidth(1) end
+                end
             end
         end
-        row.name = Label(row, "", 8, -4, 270)
-        row.detail = Label(row, "", 8, -21, 270)
+        row.name = Label(row, "", 10, -10, 248)
+        row.detail = Label(row, "", 10, -32, 248)
         row.detail:SetFontObject(GetFonts().small)
         row:SetScript("OnEnter", function(self)
             if self.entry then
@@ -263,18 +319,16 @@ local function CreatePopup()
         page = math.max(1, page - 1)
         Refresh()
     end)
-    popup.previous:SetPoint("TOPLEFT", Layout(12), Layout(-392))
     popup.next = Button(popup, ">", 30, 22, function()
         page = page + 1
         Refresh()
     end)
-    popup.next:SetPoint("TOPRIGHT", Layout(-12), Layout(-392))
     popup.page = Label(popup, "", 165, -397, 85)
     popup.noteInput = EditBox(popup, 366, 25)
-    popup.noteInput:SetPoint("TOPLEFT", Layout(12), Layout(-423))
     popup.noteInput:SetMaxLetters(100)
     popup.manage = Button(popup, "Manage characters", 180, 24, function()
         managing, pendingDelete, editingNote, page = not managing, nil, nil, 1
+        popup.visibleSlots, popup.showPagination = nil, nil
         Refresh()
     end)
     popup.manage:SetPoint("BOTTOMLEFT", Layout(12), Layout(12))
@@ -297,6 +351,22 @@ local function CreatePopup()
         Refresh()
     end)
     popup.cancel:SetPoint("BOTTOMRIGHT", Layout(-12), Layout(12))
+    popup.separator = popup:CreateTexture(nil, "ARTWORK")
+    popup.separator:SetHeight(1)
+    popup.separator:SetColorTexture(addon.accent.r, addon.accent.g, addon.accent.b, 0.5)
+    popup.themeLabel = Label(popup, "Theme:", 12, 0, 54)
+    popup.themes = {}
+    for _, theme in ipairs({ "blaze", "blizzard" }) do
+        local choice = Button(popup, theme == "blaze" and "BlazeMail" or "Blizzard", 142, 26, function()
+            BlazeMailDB.theme = theme
+            Refresh()
+        end)
+        choice.selection = Outline(choice, 2)
+        popup.themes[theme] = choice
+    end
+    popup.reload = Button(popup, "Reload UI", 110, 24, function() ReloadUI() end)
+    popup.themeHint = Label(popup, "Apply theme with Reload UI.", 12, 0, 244)
+    popup.themeHint:SetFontObject(GetFonts().small)
     popup:SetScript("OnHide", function()
         SavePosition()
         popup.search:ClearFocus()
@@ -315,9 +385,74 @@ local function CreatePopup()
     popup:Hide()
 end
 
+local function LayoutPopup(entryCount, pages)
+    local rowHeight = managing and 64 or 48
+    -- Keep capacity stable while searching or paging, so the controls do not
+    -- move under the mouse/keyboard. Recalculate when the window is reopened
+    -- or its recipient/management mode changes.
+    if not popup.visibleSlots then
+        local fullCount = #addon.GetCharacters(managing)
+        popup.visibleSlots = math.max(1, math.min(PAGE_SIZE, fullCount))
+        popup.showPagination = fullCount > PAGE_SIZE
+    end
+    local slots = math.max(popup.visibleSlots, math.min(PAGE_SIZE, entryCount))
+    popup.visibleSlots = slots
+    if pages > 1 then popup.showPagination = true end
+    for i, row in ipairs(popup.rows) do
+        row:SetHeight(Layout(rowHeight))
+        row:ClearAllPoints()
+        row:SetPoint("TOPLEFT", Layout(12), Layout(-96 - (i - 1) * (rowHeight + 6)))
+        row.name:ClearAllPoints()
+        row.name:SetPoint("TOPLEFT", Layout(10), Layout(managing and -10 or -8))
+        row.detail:ClearAllPoints()
+        row.detail:SetPoint("TOPLEFT", Layout(10), Layout(managing and -32 or -27))
+    end
+    local y = 96 + slots * (rowHeight + 6) - 6 + 10
+    for _, control in ipairs({ popup.previous, popup.next, popup.page }) do control:SetShown(popup.showPagination) end
+    popup.previous:ClearAllPoints()
+    popup.previous:SetPoint("TOPLEFT", Layout(12), Layout(-y))
+    popup.next:ClearAllPoints()
+    popup.next:SetPoint("TOPRIGHT", Layout(-12), Layout(-y))
+    popup.page:ClearAllPoints()
+    popup.page:SetPoint("TOPLEFT", Layout(165), Layout(-y - 5))
+    if popup.showPagination then y = y + 32 end
+    popup.noteInput:ClearAllPoints()
+    popup.noteInput:SetPoint("TOPLEFT", Layout(12), Layout(-y))
+    if editingNote then y = y + 37 end
+    popup.separator:ClearAllPoints()
+    popup.separator:SetPoint("TOPLEFT", Layout(12), Layout(-y))
+    popup.separator:SetPoint("TOPRIGHT", Layout(-12), Layout(-y))
+    popup.themeLabel:ClearAllPoints()
+    popup.themeLabel:SetPoint("TOPLEFT", Layout(12), Layout(-y - 15))
+    for index, theme in ipairs({ "blaze", "blizzard" }) do
+        local choice = popup.themes[theme]
+        choice:ClearAllPoints()
+        choice:SetPoint("TOPLEFT", Layout(72 + (index - 1) * 154), Layout(-y - 8))
+    end
+    if managing then y = y + 42 end
+    popup.themeHint:ClearAllPoints()
+    popup.themeHint:SetPoint("TOPLEFT", Layout(12), Layout(-y - 5))
+    popup.reload:ClearAllPoints()
+    popup.reload:SetPoint("TOPRIGHT", Layout(-12), Layout(-y))
+    if managing and BlazeMailDB.theme ~= addon.activeTheme then y = y + 32 end
+    popup:SetHeight(Layout(y + 46))
+end
+
 Refresh = function()
     local entries = addon.GetCharacters(managing, popup.search:GetText())
     local busy = pendingDelete or editingNote
+    popup.separator:SetShown(managing)
+    popup.themeLabel:SetShown(managing)
+    for theme, choice in pairs(popup.themes) do
+        choice:SetShown(managing)
+        local selected = BlazeMailDB.theme == theme
+        choice:SetText((selected and "Selected: " or "") .. (theme == "blaze" and "BlazeMail" or "Blizzard"))
+        choice:SetEnabled(not busy)
+        for _, line in ipairs(choice.selection) do line:SetShown(selected) end
+    end
+    popup.reload:SetShown(managing and BlazeMailDB.theme ~= addon.activeTheme)
+    popup.reload:SetEnabled(not busy)
+    popup.themeHint:SetShown(managing and BlazeMailDB.theme ~= addon.activeTheme)
     local pages = math.max(1, math.ceil(#entries / PAGE_SIZE))
     page = math.max(1, math.min(page, pages))
     popup.title:SetText(managing and "BlazeMail - Manage characters" or "BlazeMail - Your alts")
@@ -334,8 +469,8 @@ Refresh = function()
             row.name:SetText(character.name)
             row.favorite:SetText(character.favorite and "Unfavorite" or "Favorite")
             row.favorite:SetShown(managing)
-            row.name:SetWidth(Layout(managing and 270 or 350))
-            row.detail:SetWidth(Layout(managing and 270 or 350))
+            row.name:SetWidth(Layout(managing and 248 or 346))
+            row.detail:SetWidth(Layout(managing and 248 or 346))
             for _, line in ipairs(row.favoriteBorder) do
                 line:SetShown(character.favorite == true)
             end
@@ -371,10 +506,12 @@ Refresh = function()
     popup.confirm:SetShown(busy ~= nil)
     popup.cancel:SetShown(busy ~= nil)
     popup.noteInput:SetShown(editingNote ~= nil)
+    LayoutPopup(#entries, pages)
 end
 
 local function OpenPicker(manage)
     CreatePopup()
+    popup.visibleSlots, popup.showPagination = nil, nil
     managing, pendingDelete, editingNote, page = manage, nil, nil, 1
     positionKey = manage and "manage" or nil
     popup.search:SetText("")
@@ -386,7 +523,8 @@ local function OpenPicker(manage)
         popup:SetPoint("CENTER", UIParent, "BOTTOMLEFT",
             position.x * UIParent:GetWidth(), position.y * UIParent:GetHeight())
     elseif not manage and picker then
-        popup:SetPoint("TOPLEFT", MailFrame, "TOPRIGHT", addon.mailWindowGap, addon.mailWindowTopPadding)
+        popup:SetPoint("TOPLEFT", MailFrame, "TOPRIGHT", addon.mailWindowGap,
+            addon.IsBlizzardTheme() and 0 or addon.mailWindowTopPadding)
     else
         popup:SetPoint("CENTER")
     end
@@ -434,6 +572,7 @@ eventFrame:SetScript("OnEvent", function(_, event, name)
     if event == "ADDON_LOADED" and name == addonName then
         BlazeMailDB = BlazeMailDB or { characters = {} }
         BlazeMailDB.characters = BlazeMailDB.characters or {}
+        addon.InitializeTheme()
         addon.MigrateRulesets()
         SLASH_BLAZEMAIL1 = "/blazemail"
         SlashCmdList.BLAZEMAIL = function() OpenPicker(true) end

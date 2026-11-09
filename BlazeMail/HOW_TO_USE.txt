@@ -46,10 +46,23 @@ MANAGE CHARACTERS
 - Drag the title bar to move the window. Management remembers its position
   between openings; the recipient picker opens beside the mailbox.
 - Escape or Close closes the picker. Leaving Send Mail also closes it.
+- Search and note fields show a gold border while focused. Enter in Search
+  releases keyboard focus; X clears both the search text and focus.
+- Window height fits the available characters when opened (up to seven rows).
+  It stays stable while searching and paging. Page controls are only shown
+  when the list has multiple pages on opening.
 
 MAILBOX APPEARANCE AND TROUBLESHOOTING
-- The dark mailbox theme is applied automatically to Inbox, Send Mail and open
-  letters. Normal mail actions still use the game's controls.
+- Open /bm or /blazemail and choose BlazeMail or Blizzard beside "Theme"
+  at the bottom. The selected choice has a border and "Selected:" label.
+  BlazeMail keeps the existing dark look and is still the default. Click "Reload UI"
+  or use /reload to apply the change. Switching back before reloading cancels
+  the pending change. The theme is shared account-wide.
+- Blizzard keeps the mailbox's original appearance and layout. BlazeMail's
+  own windows use Blizzard panels, buttons, inset fields and fonts; the alt
+  picker and character management remain available.
+- BlazeMail applies the dark theme to Inbox, Send Mail and open letters.
+  Normal mail actions still use the game's controls in either theme.
 - If an alt is missing, log in on it with BlazeMail enabled, then check region,
   faction, ruleset and the search field. Unknown ruleset names are not guessed.
 - Other addons that change the mailbox may affect the appearance. Verify the

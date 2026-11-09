@@ -75,8 +75,16 @@ local function Frame(name, parent)
     function f:SetTextColor(r, g, b) self.color = { r, g, b } end
     function f:GetTextColor() return unpack(self.color or { 1, 1, 1 }) end
     function f:SetEnabled(value) self.enabled = not not value end
-    function f:ClearFocus() self.focused = false end
-    function f:SetFocus() self.focused = true end
+    function f:ClearFocus()
+        self.focused = false
+        if self.scripts.OnEditFocusLost then self.scripts.OnEditFocusLost(self) end
+    end
+    function f:SetFocus()
+        self.focused = true
+        if self.scripts.OnEditFocusGained then self.scripts.OnEditFocusGained(self) end
+    end
+    function f:SetSize(width, height) self.width, self.height = width, height end
+    function f:SetHeight(height) self.height = height end
     function f:GetCenter() return self.centerX or 960, self.centerY or 540 end
     function f:GetWidth() return 1920 end
     function f:GetHeight() return 1080 end
@@ -92,17 +100,25 @@ local function Frame(name, parent)
     end
     function f:SetPoint(...) self.point = { ... } end
     local noop = function() end
-    for _, method in ipairs({ "SetSize", "SetWidth", "SetJustifyH", "SetAllPoints", "SetHitRectInsets",
+    for _, method in ipairs({ "SetWidth", "SetJustifyH", "SetAllPoints", "SetHitRectInsets",
         "SetColorTexture", "SetHighlightTexture", "SetNormalFontObject", "SetHighlightFontObject",
         "SetDisabledFontObject", "SetFrameStrata",
         "SetClampedToScreen", "EnableMouse", "SetFontObject", "ClearAllPoints", "SetOwner", "SetWordWrap",
-        "SetMovable", "RegisterForDrag", "StartMoving", "StopMovingOrSizing", "SetHeight" }) do
+        "SetMovable", "RegisterForDrag", "StartMoving", "StopMovingOrSizing" }) do
         f[method] = noop
     end
-    for _, method in ipairs({ "SetAutoFocus", "SetTextInsets", "SetMaxLetters" }) do f[method] = noop end
+    for _, method in ipairs({ "SetBlinkSpeed", "SetAutoFocus", "SetTextInsets", "SetMaxLetters" }) do f[method] = noop end
     return f
 end
-CreateFrame = function(_, name, parent) return Frame(name, parent) end
+CreateFrame = function(_, name, parent, template)
+    local frame = Frame(name, parent)
+    frame.template = template
+    if template == "DefaultPanelTemplate" then
+        frame.TitleContainer = Frame(nil, frame)
+        frame.TitleContainer.TitleText = frame.TitleContainer:CreateFontString()
+    end
+    return frame
+end
 CreateFont = function(name)
     local font = {}
     function font:SetFontObject(base) self.base = base end
@@ -143,6 +159,7 @@ local function Register(guid, first, faction, ruleset, region)
 end
 
 Event("ADDON_LOADED", "BlazeMail")
+assert(BlazeMailDB.theme == "blaze" and addon.activeTheme == "blaze", "existing users keep BlazeMail theme")
 assert(addon.NormalizeRuleset("CAMWOW EU4 Realm 7 PvE") == "PvE", "reported client format")
 assert(addon.NormalizeRuleset("CAMWOW EU4 Realm 12 PvE") == "PvE", "ignore connection number")
 assert(addon.NormalizeRuleset("CAMWOW EU4 Realm 8 PvP") == "PvP")
@@ -430,4 +447,89 @@ assert(#frames == themedCount and #themeHooks == 1, "theme application is idempo
 tabArt:Show()
 themeHooks[1]()
 assert(not tabArt:IsShown(), "tab changes do not restore old tab art")
+-- Theme changes are saved immediately but cannot partially reskin a live UI.
+SlashCmdList.BLAZEMAIL()
+local customPopup = BlazeMailPicker
+Click(customPopup.themes.blizzard)
+assert(BlazeMailDB.theme == "blizzard" and nextSession.activeTheme == "blaze")
+assert(customPopup.reload:IsShown() and customPopup.themeHint:IsShown())
+local reloads = 0
+ReloadUI = function() reloads = reloads + 1 end
+Click(customPopup.reload)
+assert(reloads == 1, "reload requires an explicit click")
+Click(customPopup.themes.blaze)
+assert(not customPopup.reload:IsShown(), "switching back cancels pending theme change")
+Click(customPopup.themes.blizzard)
+customPopup:Hide()
+
+-- Simulate a reload with untouched Blizzard frames and the saved theme.
+local blizzardSession = {}
+assert(loadfile("BlazeMail/Characters.lua"))("BlazeMail", blizzardSession)
+assert(loadfile("BlazeMail/MailTheme.lua"))("BlazeMail", blizzardSession)
+assert(loadfile("BlazeMail/BlazeMail.lua"))("BlazeMail", blizzardSession)
+local blizzardEvents = frames[#frames]
+blizzardEvents.scripts.OnEvent(blizzardEvents, "ADDON_LOADED", "BlazeMail")
+assert(blizzardSession.IsBlizzardTheme(), "saved theme survives a fresh namespace")
+MailFrame = Frame("MailFrame", UIParent)
+local defaultArt = MailFrame:CreateTexture()
+local beforeFrames, beforeHooks = #frames, #themeHooks
+blizzardSession.ApplyMailTheme()
+assert(defaultArt:IsShown() and #frames == beforeFrames and #themeHooks == beforeHooks,
+    "Blizzard theme leaves mailbox art, layout and hooks untouched")
+SlashCmdList.BLAZEMAIL()
+local defaultPopup = BlazeMailPicker
+assert(defaultPopup.template == "DefaultPanelTemplate")
+assert(defaultPopup.close.template == "UIPanelButtonTemplate")
+assert(defaultPopup.search.template == nil)
+assert(defaultPopup.rows[1].template == nil, "rows have no decorative child frames")
+assert(defaultPopup.rows[1].height == 64 and defaultPopup.rows[1].favorite.height == 24,
+    "management rows have room for two normal-height action buttons")
+defaultPopup.search.scripts.OnMouseDown(defaultPopup.search)
+assert(defaultPopup.search.focusBorder[1]:IsShown(), "focused search has a visible border")
+defaultPopup.search.scripts.OnEnterPressed(defaultPopup.search)
+assert(not defaultPopup.search.focusBorder[1]:IsShown(), "Enter clears the focus border")
+local fullHeight = defaultPopup.height
+defaultPopup.search:SetText("no matching characters")
+assert(defaultPopup.height == fullHeight, "search does not move controls by resizing the window")
+defaultPopup.search:SetText("")
+assert(blizzardSession.GetFonts().normal == GameFontHighlight, "use Blizzard fonts")
+blizzardEvents.scripts.OnEvent(blizzardEvents, "PLAYER_LOGIN")
+assert(defaultPopup.rows[1].entry, "character management still lists saved characters")
+Click(defaultPopup.rows[1].note)
+assert(defaultPopup.noteInput.focusBorder[1]:IsShown(), "note editor shows keyboard focus")
+defaultPopup.noteInput:SetText("Blizzard theme note")
+Click(defaultPopup.confirm)
+assert(defaultPopup.rows[1].entry.character.note == "Blizzard theme note")
+defaultPopup:Hide()
+SendMailFrame:Show()
+blizzardEvents.scripts.OnEvent(blizzardEvents, "MAIL_SHOW")
+local defaultPicker
+for _, frame in ipairs(frames) do
+    if frame.text == "v" then defaultPicker = frame end
+end
+assert(defaultPicker.template == "UIPanelButtonTemplate")
+Click(defaultPicker)
+assert(not defaultPopup.themes.blizzard:IsShown() and not defaultPopup.themeLabel:IsShown())
+assert(defaultPopup.rows[1].height == 48, "recipient rows have more text padding")
+assert(defaultPopup.height < fullHeight, "recipient window fits its smaller character list")
+defaultPopup.search:SetText(defaultPopup.rows[1].entry.character.name)
+Click(defaultPopup.manage)
+local filteredManagementHeight = defaultPopup.height
+defaultPopup.search:SetText("")
+assert(defaultPopup.height == filteredManagementHeight and
+    defaultPopup.visibleSlots == math.min(7, #blizzardSession.GetCharacters(true)),
+    "switching modes with an active search reserves room for the full list")
+Click(defaultPopup.manage)
+local defaultRecipient = defaultPopup.rows[1].entry.character.name
+Click(defaultPopup.rows[1])
+assert(SendMailNameEditBox:GetText() == defaultRecipient and not defaultPopup:IsShown(),
+    "Blizzard recipient picker fills the selected name")
+assert(defaultArt:IsShown() and #themeHooks == beforeHooks, "mail events preserve Blizzard appearance")
+SlashCmdList.BLAZEMAIL()
+Click(defaultPopup.themes.blaze)
+blizzardSession.ApplyMailTheme()
+assert(defaultArt:IsShown() and #themeHooks == beforeHooks, "pending BlazeMail theme waits for reload")
+BlazeMailDB.theme = "invalid"
+blizzardSession.InitializeTheme()
+assert(BlazeMailDB.theme == "blaze", "invalid themes safely default to BlazeMail")
 print("BlazeMail: all regression checks passed (Lua " .. _VERSION .. ")")

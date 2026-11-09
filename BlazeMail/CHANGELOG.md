@@ -4,6 +4,25 @@ Record future release changes here, newest first. Use `Unreleased` for pending
 changes, then move them under a version and date when preparing a release.
 Earlier versions have not been reconstructed.
 
+## Unreleased
+
+### Added
+- Account-wide theme selection at the bottom of the BlazeMail window: keep
+  the existing BlazeMail look or use Blizzard's original mailbox appearance
+  with Blizzard panels, buttons, inset fields and fonts for the addon windows.
+- An explicit Reload UI button for pending theme changes. The active theme
+  stays unchanged until reload; existing users keep the BlazeMail theme.
+- Visible keyboard-focus borders on the search and note fields.
+
+### Changed
+- Neutral Blizzard character-list rows with more text padding and taller,
+  separated Favorite and Note buttons.
+- Fit window height to the character count on opening, place pagination
+  directly below the list and hide it for single-page lists. Keep the layout
+  stable while searching or paging.
+- Group the two explicit theme choices above the bottom action buttons and
+  clearly mark the selected theme.
+
 ## 1.2.2 - 2026-11-09
 
 ### Fixed

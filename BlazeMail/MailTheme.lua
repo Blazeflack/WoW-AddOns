@@ -6,6 +6,17 @@ addon.accent = accent
 local panels, buttons = {}, {}
 local hookedTabs = false
 
+-- Freeze the active theme until reload: the custom mailbox layout is not
+-- safely reversible while Blizzard's mail frames are already in use.
+function addon.InitializeTheme()
+    if BlazeMailDB.theme ~= "blizzard" then BlazeMailDB.theme = "blaze" end
+    addon.activeTheme = BlazeMailDB.theme
+end
+
+function addon.IsBlizzardTheme()
+    return addon.activeTheme == "blizzard"
+end
+
 local function InboxColors()
     for index = 1, 7 do
         local expiry = _G["MailItem" .. index .. "ExpireTime"]
@@ -304,6 +315,7 @@ local function InboxRow(row, button, first, fonts)
 end
 
 function addon.ApplyMailTheme()
+    if addon.IsBlizzardTheme() then return end
     if not MailFrame or not SendMailFrame then return end
     local fonts = addon.GetFonts()
     Window(MailFrame, fonts)
