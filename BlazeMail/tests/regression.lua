@@ -368,7 +368,7 @@ Click(popup.rows[1].note)
 popup.noteInput:SetText("Bank")
 popup.noteInput.scripts.OnEnterPressed()
 assert(BlazeMailDB.characters[removed].note == "Bank", "Enter saves note")
-assert(popup.rows[1].detail.text:find("Bank", 1, true), "saved note displayed beneath name")
+assert(popup.rows[1].detail.text == "Bank", "management shows only the note beneath the name")
 Click(popup.rows[1])
 assert(not popup.close:IsShown(), "confirmation buttons do not overlap Close")
 Click(popup.confirm)
@@ -540,6 +540,11 @@ SendMailFrame:Show()
 assert(defaultPopup.point[1] == "TOPLEFT" and defaultPopup.point[2] == MailFrame, "settings shortcut ignores saved position")
 defaultPopup:Hide()
 Click(defaultPicker)
+for _, row in ipairs(defaultPopup.rows) do
+    if row.entry then
+        assert(row.detail.text == (row.entry.character.note or ""), "recipient rows show only the note beneath the name")
+    end
+end
 assert(not defaultPopup.dropdown:IsShown() and not defaultPopup.themeLabel:IsShown())
 assert(defaultPopup.rows[1].height == 48, "recipient rows have more text padding")
 assert(defaultPopup.height < fullHeight, "recipient window fits its smaller character list")
