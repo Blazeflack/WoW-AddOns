@@ -19,7 +19,8 @@ SEND MAIL TO AN ALT
 1. Open a mailbox and select "Send Mail".
 2. Click the small "v" button to the right of the "To:" field.
    "Open Automatically" below Theme in Characters / Settings opens
-   the alt list whenever you enter Send Mail. It is on by default, shared
+   the alt list whenever you enter Send Mail and after a successful send.
+   It is on by default, shared
    account-wide and takes effect immediately without reloading.
 3. Choose a character to fill in the recipient's first and last name.
 4. Add your subject, message, attachments or money, check the recipient and send
@@ -32,6 +33,7 @@ clear the search, and the page buttons to browse longer lists.
 After a successful send, the recipient is filled in again so you can send
 another batch. This also works for manually entered recipients. Choose or type
 a different name to change it. This memory ends when you close the mailbox.
+The recipient is filled in again whether Open Automatically is enabled or disabled.
 
 MANAGE CHARACTERS
 - Type /blazemail or click "Characters / Settings" in the recipient picker.

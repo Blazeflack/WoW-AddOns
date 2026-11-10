@@ -1,6 +1,6 @@
 local addonName, addon = ...
 local eventFrame = CreateFrame("Frame")
-local popup, picker, Refresh
+local popup, picker, Refresh, OpenPicker
 local settingsTab
 local page, managing, pendingDelete = 1, false, nil
 local editingNote, positionKey
@@ -168,9 +168,12 @@ local function RestoreSentRecipient()
     -- Blizzard clears the form in its own MAIL_SEND_SUCCESS handler. Waiting
     -- until the next frame makes this independent of event-handler ordering.
     C_Timer.After(0, function()
-        if sent.session == mailSession and sent.revision == recipientRevision
-            and SendMailFrame:IsShown() and SendMailNameEditBox:GetText() == "" then
+        if sent.session ~= mailSession or not SendMailFrame:IsShown() then return end
+        if sent.revision == recipientRevision and SendMailNameEditBox:GetText() == "" then
             FillRecipient(sent.name)
+        end
+        if BlazeMailDB.openAutomatically then
+            OpenPicker(false, true)
         end
     end)
 end
@@ -394,7 +397,7 @@ local function CreatePopup()
     end)
     popup.autoOpen:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText("When enabled, the list of alts opens automatically when you switch to the Send Mail tab.", 1, 1, 1, 1, true)
+        GameTooltip:SetText("When enabled, the list of alts opens automatically when you switch to the Send Mail tab and after successfully sending mail.", 1, 1, 1, 1, true)
         GameTooltip:Show()
     end)
     popup.autoOpen:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -529,7 +532,7 @@ Refresh = function()
     LayoutPopup(#entries, pages)
 end
 
-local function OpenPicker(manage, besideMailbox)
+OpenPicker = function(manage, besideMailbox)
     CreatePopup()
     popup.visibleSlots, popup.showPagination = nil, nil
     managing, pendingDelete, editingNote, page = manage, nil, nil, 1

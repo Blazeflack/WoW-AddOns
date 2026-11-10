@@ -4,6 +4,8 @@ Mailbox-tema og alt-modtagervælger til WoW Forever. Ingen eksterne addon-afhæn
 
 ## Brug
 
+- **Open Automatically** åbner modtagerlisten ved skift til **Send Mail** og igen efter en vellykket afsendelse. Det senest afsendte modtagernavn genudfyldes både med indstillingen slået til og fra.
+
 - Vælg tema øverst i `/bm`- eller `/blazemail`-vinduet: **BlazeMail** beholder det eksisterende look og er fortsat standard; **Blizzard** lader mailboxens originale grafik og layout være urørt og bruger Blizzard-paneler, knapper, inset-felter og fonte i addonets egne vinduer. Valget gemmes account-wide. Klik **Reload UI**, eller brug `/reload`, for at aktivere ændringen. Et skift tilbage inden reload annullerer ændringen. De nedenstående beskrivelser af mailboxens mørke tema gælder **BlazeMail**.
 - Vælg tema i rullemenuen. **Reload UI** ved siden af bliver aktiv ved et ændret valg. Blizzard-listens character-rækker bruger neutrale inset-baggrunde og hover-markering. Administrationen har højere rækker med to separate knapper på 24 UI-enheders højde.
 - Søge- og notefeltet får en guldkant ved tastaturfokus. Enter i søgefeltet eller **X** fjerner fokusmarkeringen. Vinduets højde tilpasses listen ved åbning og skift mellem modtagere/administration, men holdes stabil under søgning og sideskift. Navigationen ligger direkte under listen og skjules, hvis listen kun har én side ved åbning.
