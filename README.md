@@ -4,6 +4,14 @@ This repository contains small, independent World of Warcraft addons developed f
 
 Each addon lives in its own directory and can be installed separately.
 
+## License
+
+This repository and its addons are licensed under the [MIT License](./LICENSE).
+Copyright (c) 2026 Blazeflack. You may use, modify and redistribute the code,
+including commercially, provided that the copyright and license notices are
+preserved in copies or substantial portions of the code. Each addon includes
+its own copy of the license.
+
 ## Addons
 
 - [BlazeDisenchant](./BlazeDisenchant/) shows which materials an item may yield when disenchanted, using Classic drop estimates. It also logs actual disenchant results in WoW Forever. With Auctionator price data, the tooltip includes the estimated value of the materials.
