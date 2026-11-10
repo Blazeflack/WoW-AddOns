@@ -6,6 +6,12 @@ Earlier versions have not been reconstructed.
 
 ## Unreleased
 
+### Added
+- Account-wide "Open Automatically" toggle below Theme in Characters / Settings,
+  with a tooltip. When enabled, entering Send Mail opens the alt list in either
+  theme. On by default; changes take effect without reloading.
+  Uses Blizzard's native checkbox when the Blizzard theme is active.
+
 ## 1.3.0 - 2026-11-09
 
 ### Added

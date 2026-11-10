@@ -369,6 +369,35 @@ local function CreatePopup()
     end)
     popup.reload = Button(popup, "Reload UI", 110, 26, function() ReloadUI() end)
     popup.reload:SetPoint("TOPRIGHT", -24, -38)
+    popup.autoOpen = CreateFrame("CheckButton", nil, popup, blizzard and "UICheckButtonTemplate" or nil)
+    if blizzard then
+        popup.autoOpen:SetPoint("TOPLEFT", Layout(19), Layout(-67))
+        popup.autoOpen.Text:SetFontObject(GetFonts().normal)
+        popup.autoOpen.Text:SetText("Open Automatically")
+        popup.autoOpen.label = popup.autoOpen.Text
+    else
+        popup.autoOpen:SetSize(Layout(22), Layout(22))
+        popup.autoOpen:SetPoint("TOPLEFT", Layout(24), Layout(-72))
+        local background = popup.autoOpen:CreateTexture(nil, "BACKGROUND")
+        background:SetAllPoints()
+        background:SetColorTexture(0.408, 0.318, 0.227, 1)
+        local checked = popup.autoOpen:CreateTexture(nil, "ARTWORK")
+        checked:SetPoint("TOPLEFT", 5, -5)
+        checked:SetPoint("BOTTOMRIGHT", -5, 5)
+        checked:SetColorTexture(0.933, 0.910, 0.863, 1)
+        popup.autoOpen:SetCheckedTexture(checked)
+        popup.autoOpen.label = Label(popup.autoOpen, "Open Automatically", 28, -4, 160)
+    end
+    popup.autoOpen:SetHitRectInsets(0, Layout(-160), 0, 0)
+    popup.autoOpen:SetScript("OnClick", function(self)
+        BlazeMailDB.openAutomatically = self:GetChecked() == true
+    end)
+    popup.autoOpen:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText("When enabled, the list of alts opens automatically when you switch to the Send Mail tab.", 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    popup.autoOpen:SetScript("OnLeave", function() GameTooltip:Hide() end)
     popup:SetScript("OnHide", function()
         SavePosition()
         popup.search:ClearFocus()
@@ -400,7 +429,7 @@ local function LayoutPopup(entryCount, pages)
     local slots = math.max(popup.visibleSlots, math.min(PAGE_SIZE, entryCount))
     popup.visibleSlots = slots
     if pages > 1 then popup.showPagination = true end
-    local searchTop = managing and 98 or 38
+    local searchTop = managing and 130 or 38
     local listTop = searchTop + 38
     local function Place(widget, point, x, y)
         widget:ClearAllPoints()
@@ -443,6 +472,9 @@ Refresh = function()
     popup.dropdown:SetEnabled(not busy)
     popup.reload:SetShown(managing)
     popup.reload:SetEnabled(not busy and BlazeMailDB.theme ~= addon.activeTheme)
+    popup.autoOpen:SetShown(managing)
+    popup.autoOpen:SetEnabled(not busy)
+    popup.autoOpen:SetChecked(BlazeMailDB.openAutomatically == true)
     popup.context:SetShown(managing)
     local pages = math.max(1, math.ceil(#entries / PAGE_SIZE))
     page = math.max(1, math.min(page, pages))
@@ -563,7 +595,13 @@ local function AttachPicker()
     local function RefreshSettings()
         if managing and popup and popup:IsShown() then Refresh() end
     end
-    SendMailFrame:HookScript("OnShow", RefreshSettings)
+    SendMailFrame:HookScript("OnShow", function()
+        if BlazeMailDB.openAutomatically then
+            OpenPicker(false, true)
+        else
+            RefreshSettings()
+        end
+    end)
     SendMailFrame:HookScript("OnHide", function()
         if managing then
             RefreshSettings()
@@ -584,6 +622,7 @@ eventFrame:SetScript("OnEvent", function(_, event, name)
     if event == "ADDON_LOADED" and name == addonName then
         BlazeMailDB = BlazeMailDB or { characters = {} }
         BlazeMailDB.characters = BlazeMailDB.characters or {}
+        BlazeMailDB.openAutomatically = BlazeMailDB.openAutomatically ~= false
         addon.InitializeTheme()
         addon.MigrateRulesets()
         SLASH_BLAZEMAIL1 = "/blazemail"
