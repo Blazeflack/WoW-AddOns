@@ -6,6 +6,8 @@ Earlier versions have not been reconstructed.
 
 ## Unreleased
 
+## 1.4.1 - 2026-11-10
+
 ### Changed
 - Open Automatically also reopens the character picker after a successful send.
   The last recipient is still filled in again with the option enabled or disabled.
