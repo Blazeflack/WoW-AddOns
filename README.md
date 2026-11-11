@@ -14,12 +14,6 @@ its own copy of the license.
 
 ## Addons
 
-- [BlazeDisenchant](./BlazeDisenchant/) shows which materials an item may yield when disenchanted, using Classic drop estimates. It also logs actual disenchant results in WoW Forever. With Auctionator price data, the tooltip includes the estimated value of the materials.
-
-  Open the observation log with `/bde` or `/blazedisenchant`.
-
-  ![BlazeDisenchant tooltip showing estimated disenchant materials, drop chances, quantities and Auctionator value](./BlazeDisenchant/images/disenchant-tooltip.png)
-
 - [BlazeMail](./BlazeMail/) adds a searchable recipient picker to the Send Mail window. Select an alt to fill in the recipient field. In **Characters / Settings**, you can choose a theme, mark individual characters as favorites, and add notes for each character.
 
   Open **Characters / Settings** with `/bm` or `/blazemail`, or click the **BlazeMail** button in the mailbox window.

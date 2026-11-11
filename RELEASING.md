@@ -22,7 +22,6 @@ top-level addon folder. The release notes come from that version's changelog ent
 3. In **History**, right-click the commit containing both the workflow and the
    intended addon files, then choose **Create Tag...**.
 4. Enter the addon's tag, using exactly this format:
-   - `BlazeDisenchant-v0.2.1`
    - `BlazeMail-v1.2.1`
    - `BlazeTweaks-v1.0.1`
 5. Push the tag with **Push origin**. Repeat for each addon you want to release.

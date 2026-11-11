@@ -10,10 +10,10 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 def package(tag, output_dir):
     match = re.fullmatch(
-        r"(BlazeDisenchant|BlazeMail|BlazeTweaks)-v(\d+\.\d+\.\d+)", tag
+        r"(BlazeMail|BlazeTweaks)-v(\d+\.\d+\.\d+)", tag
     )
     if not match:
-        raise ValueError("Expected tag AddonName-vX.Y.Z for one of the three addons")
+        raise ValueError("Expected tag AddonName-vX.Y.Z for a supported addon")
     addon, version = match.groups()
     root = Path(__file__).resolve().parents[2]
     toc_path = root / addon / f"{addon}.toc"

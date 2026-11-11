@@ -3,7 +3,6 @@ name: Release addon
 on:
   push:
     tags:
-      - 'BlazeDisenchant-v*'
       - 'BlazeMail-v*'
       - 'BlazeTweaks-v*'
 
