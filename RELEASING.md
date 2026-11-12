@@ -1,5 +1,14 @@
 # Releasing an addon
 
+This guide describes the original combined repository. Future development and
+releases use the separate repositories:
+
+- https://github.com/Blazeflack/BlazeMail
+- https://github.com/Blazeflack/BlazeTweaks
+
+Follow `RELEASING.md` in the relevant new repository. Existing releases here are
+retained and are not recreated or overwritten during the migration.
+
 Pushing an addon tag runs `.github/workflows/release-addon.yml`. It packages only
 that addon, checks the TOC version and required files, and creates a GitHub
 release with an installable ZIP. Tests are excluded, and the ZIP has exactly one

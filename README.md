@@ -1,5 +1,12 @@
 # WoW AddOns
 
+> Development has moved to separate repositories:
+> [BlazeMail](https://github.com/Blazeflack/BlazeMail) and
+> [BlazeTweaks](https://github.com/Blazeflack/BlazeTweaks).
+> Please use those repositories for new issues, source changes and future releases.
+> This repository retains the original source history and published releases;
+> existing download links remain available.
+
 This repository contains small, independent World of Warcraft addons developed for WoW Forever. Each addon addresses a specific need that existing addons did not meet.
 
 Each addon lives in its own directory and can be installed separately.
