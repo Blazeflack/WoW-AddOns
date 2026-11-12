@@ -6,6 +6,13 @@ Earlier versions have not been reconstructed.
 
 ## Unreleased
 
+## 1.4.2 - 2026-11-12
+
+### Changed
+- Removed the BlazeMail title from the mailbox window in the BlazeMail theme.
+- Moved the Inbox and Send Mail tabs to the left, keeping the BlazeMail tab
+  on the right beside the close button.
+
 ## 1.4.1 - 2026-11-10
 
 ### Changed

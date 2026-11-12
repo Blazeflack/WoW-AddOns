@@ -161,17 +161,13 @@ local function LayoutMailbox(fonts)
         if OpenMailReplyButton then Place(OpenMailReplyButton, OpenMailFrame, "BOTTOMRIGHT", -168, 6, 68, 24) end
     end
     if MailFrame.TitleContainer then MailFrame.TitleContainer:Hide() end
-    local title = MailFrame:CreateFontString(nil, "OVERLAY")
-    title:SetFontObject(fonts.normal)
-    title:SetPoint("TOPLEFT", MailFrame, "TOPLEFT", 12, -8)
-    title:SetText("BlazeMail")
     if MailFrame.CloseButton then
         Place(MailFrame.CloseButton, MailFrame, "TOPRIGHT", -12, -3, 24, 23)
     end
     for i = 1, 2 do
         local tab = _G["MailFrameTab" .. i]
         if tab then
-            Place(tab, MailFrame, "TOPLEFT", 88 + (i - 1) * 82, -2, 80, 25)
+            Place(tab, MailFrame, "TOPLEFT", 12 + (i - 1) * 82, -2, 80, 25)
             local indicator = tab:CreateTexture(nil, "OVERLAY")
             indicator:SetPoint("BOTTOMLEFT")
             indicator:SetPoint("BOTTOMRIGHT")

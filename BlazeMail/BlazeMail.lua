@@ -568,7 +568,7 @@ local function AttachPicker()
             settingsTab:SetScript("OnClick", OpenSettings)
         else
             settingsTab = Button(MailFrame, "BlazeMail", 90, 25, OpenSettings)
-            settingsTab:SetPoint("TOPLEFT", MailFrame, "TOPLEFT", 256, -2)
+            settingsTab:SetPoint("TOPRIGHT", MailFrame, "TOPRIGHT", -44, -2)
         end
     end
     if picker or not SendMailFrame or not SendMailNameEditBox then return end
